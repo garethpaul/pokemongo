@@ -7,13 +7,11 @@ Included in this project:
 - Assets for Pikachu and Pokeball
 - The basics of getting started with collision detection (e.g. getting pokemon)
 
-
 ## Quick Steps
 
 1. Install Unity https://unity3d.com
 2. Open this project
 3. Open the scene "PokemonThrows"
-
 
 # Starting from Scratch
 
@@ -31,3 +29,8 @@ Included in this project:
 1. Add Component - Rigidbody
 2. Add Component - Box Collider
 3. Add Component - HitObject.cs
+
+
+### Screenshots
+<img src="../screenshots/001/001.png" width="700px">
+<img src="../screenshots/001/002.png" width="700px">
