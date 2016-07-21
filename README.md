@@ -15,3 +15,7 @@
 # 4. Tutorial 004 shows how to create 3D mapping app with 3D objects.
 
 <img src="screenshots/004/001.jpg" width="700px">
+
+
+Pokémon is a registered trademark of Nintendo (1995 - Present).
+This project is in no way affiliated with Nintendo or supported by Nintendo. This is a fan made project created free and for the free enjoyment of Pokémon fans and Gaming Developers.
