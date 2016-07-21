@@ -9,9 +9,9 @@ Included in this project:
 
 ## Quick Steps
 
-1. Install Xcode
-2. Open the project in the iOS Folder
-3. Build for a device
+1. Install Unity
+2. Open the 003_augmented_reality
+3. Open the scene '/scenes/PokemonScene.unity'
 
 ### Screenshots
 
