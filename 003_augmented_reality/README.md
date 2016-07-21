@@ -10,8 +10,9 @@ Included in this project:
 ## Quick Steps
 
 1. Install Unity
-2. Open the 003_augmented_reality
-3. Open the scene '/scenes/PokemonScene.unity'
+2. Get the SDK Kudan at Kudan.eu
+3. Open the 003_augmented_reality
+4. Open the scene '/scenes/PokemonScene.unity'
 
 ### Screenshots
 
