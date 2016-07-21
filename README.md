@@ -14,4 +14,4 @@
 
 # 4. Tutorial 004 shows how to create 3D mapping app with 3D objects.
 
-<img src="../screenshots/004/001.jpg" width="700px">
+<img src="screenshots/004/001.jpg" width="700px">
