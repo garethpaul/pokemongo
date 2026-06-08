@@ -46,3 +46,6 @@ location or camera data by default.
 - Undocumented third-party assets
 - Hidden location or camera upload behavior
 - Broad engine upgrades without tutorial-specific migration notes
+
+This list is a roadmap guardrail, not a permanent rule.
+Strong user demand and strong technical rationale can change it.
