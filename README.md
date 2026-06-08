@@ -16,7 +16,9 @@ This README is based on the checked-in source, manifests, scripts, and repositor
 - `002_characters` - source or example code
 - `003_augmented_reality` - source or example code
 - `004_slippy_maps` - source or example code
+- `ASSET_NOTICES.md` - asset ownership and fan-project usage notes
 - `CHANGES.md` - notable maintenance changes
+- `docs/plans` - completed engineering plans in the canonical location
 - `Makefile` - local verification entry points
 - `TOOLCHAIN.md` - Unity, Blender, AR SDK, and map package assumptions
 - `plans` - completed maintenance plans
@@ -50,6 +52,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 ## Running or Using the Project
 
 - Start with the numbered tutorial directories in order.
+- Review `ASSET_NOTICES.md` before reusing, replacing, or redistributing
+  checked-in character, model, screenshot, AR, or map-package assets.
 - Check `TOOLCHAIN.md` before opening a tutorial in Unity or Blender.
 - Open Unity projects from `001_collisions` and `003_augmented_reality` with a compatible Unity editor.
 - Open Blender assets from `002_characters`, and import `004_slippy_maps/PokemonMap.unitypackage` from Unity.
@@ -58,8 +62,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 - Run `make check` or `make verify` before committing tutorial structure, screenshot, or asset-reference changes.
 - The verification gate checks README image references, the expected Unity,
-  Blender, and Unity package artifacts, and the top-level toolchain matrix
-  without requiring Unity to be installed.
+  Blender, and Unity package artifacts, the top-level toolchain matrix, and
+  asset-notice coverage without requiring Unity to be installed.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -76,7 +80,10 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `VISION.md` for project direction and contribution guardrails.
 - See `TOOLCHAIN.md` for tutorial setup and permission-sensitive assumptions.
+- See `ASSET_NOTICES.md` for asset ownership and fan-project usage notes.
 - See `CHANGES.md` for maintenance history.
+- See `docs/plans/2026-06-08-asset-notices-baseline.md` for the current
+  canonical completed engineering plan.
 - See `plans/2026-06-08-toolchain-matrix-validation.md` for the current
   toolchain matrix validation baseline.
 

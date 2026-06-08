@@ -15,5 +15,7 @@ projects themselves were authored against older tools.
 
 - Keep this matrix updated when tutorial README setup steps, Unity versions, or
   package assumptions change.
+- Keep `ASSET_NOTICES.md` updated when character, model, screenshot, AR, or map
+  package assets are added, removed, or replaced.
 - Do not commit credentials, device provisioning profiles, or SDK license files.
 - Keep camera and location assumptions visible in docs and sample code.
