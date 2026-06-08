@@ -7,7 +7,7 @@ Included in this project:
 - Assets for Pikachu
 - Blender file for editing
 
-<img src="../screenshots/002/001.png" width"700">
+<img src="../screenshots/002/001.png" width="700px">
 
 ## Tools
 - Blender - https://blender.org (this is an open source 3D content creation tool)

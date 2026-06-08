@@ -16,21 +16,26 @@ This README is based on the checked-in source, manifests, scripts, and repositor
 - `002_characters` - source or example code
 - `003_augmented_reality` - source or example code
 - `004_slippy_maps` - source or example code
+- `CHANGES.md` - notable maintenance changes
+- `Makefile` - local verification entry points
+- `plans` - completed maintenance plans
+- `scripts` - deterministic tutorial inventory checks
 - `SECURITY.md` - security reporting and disclosure guidance
 - `VISION.md` - project direction and maintenance guardrails
 
 Additional scan context:
 
-- Source directories: 001_collisions, 002_characters, 003_augmented_reality, 004_slippy_maps
-- Dependency and build manifests: none detected
-- Entry points or build surfaces: none detected
-- Test-looking files: no obvious test files detected
+- Source directories: 001_collisions, 002_characters, 003_augmented_reality, 004_slippy_maps, scripts
+- Dependency and build manifests: Makefile
+- Entry points or build surfaces: Makefile
+- Test-looking files: scripts/check-tutorial-assets.rb
 
 ## Getting Started
 
 ### Prerequisites
 
 - Git
+- Ruby and `make`
 
 ### Setup
 
@@ -43,11 +48,14 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 ## Running or Using the Project
 
-- No single runtime entry point was identified. Start by reading the source files and manifests listed above.
+- Start with the numbered tutorial directories in order.
+- Open Unity projects from `001_collisions` and `003_augmented_reality` with a compatible Unity editor.
+- Open Blender assets from `002_characters`, and import `004_slippy_maps/PokemonMap.unitypackage` from Unity.
 
 ## Testing and Verification
 
-- No dedicated automated test command was identified from the checked-in files. Verify changes by running the relevant build or manually exercising the sample.
+- Run `make verify` before committing tutorial structure, screenshot, or asset-reference changes.
+- The verification gate checks README image references and the expected Unity, Blender, and Unity package artifacts without requiring Unity to be installed.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 

@@ -17,12 +17,13 @@ Priority:
 
 - Preserve the numbered tutorial structure
 - Keep screenshots and asset references available
+- Maintain `make verify` as the local tutorial asset inventory gate
 - Maintain the non-affiliation and fan-project disclaimer
 - Document Unity, Blender, and SDK assumptions for each tutorial
 
 Next priorities:
 
-- Add a top-level setup matrix for required tools per tutorial
+- Expand the top-level setup matrix for required tools per tutorial
 - Clarify which assets are original, third-party, or placeholders
 - Add troubleshooting notes for missing SDKs and Unity package imports
 - Keep each tutorial runnable independently where possible
