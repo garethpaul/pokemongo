@@ -1,5 +1,8 @@
 # pokemongo
 
+<!-- README-OVERVIEW-IMAGE -->
+![Project overview](docs/readme-overview.svg)
+
 ## Overview
 
 `garethpaul/pokemongo` is a public sample, documentation, or utility project. A series of tutorials on the basics of replicating Pokémon Go
@@ -70,4 +73,3 @@ Keep changes small and tied to the project that is already present in this repos
 Prior README summary:
 
 > Tutorials <!-- README-OVERVIEW-IMAGE --> 1. Tutorial 001 in this directory shows you how you can do some simple collision detection. 2. Tutorial 002 shows how to create characters Pikachu and Pokeball using Blender. 3. Tutorial 003 shows how to build a SLAM based AR experience. 4. Tutorial 004 shows how to create 3D mapping app with 3D objects. Pokémon is a registered trademark of Nintendo (1995 - Present).
-
