@@ -41,6 +41,27 @@ require_file(errors, '002_characters/Pokeball.blend', '002_characters is missing
 require_file(errors, '003_augmented_reality/AR Example Pokemon Go/ProjectSettings/ProjectVersion.txt', '003_augmented_reality is missing Unity ProjectVersion.txt')
 require_file(errors, '003_augmented_reality/AR Example Pokemon Go/Assets/Scenes/PokemonScene.unity', '003_augmented_reality is missing PokemonScene.unity')
 require_file(errors, '004_slippy_maps/PokemonMap.unitypackage', '004_slippy_maps is missing PokemonMap.unitypackage')
+require_file(errors, 'TOOLCHAIN.md', 'TOOLCHAIN.md is missing')
+
+if File.file?('TOOLCHAIN.md')
+  toolchain = File.read('TOOLCHAIN.md')
+  tutorials.each do |tutorial|
+    errors << "TOOLCHAIN.md missing row for #{tutorial}" unless toolchain.include?("| #{tutorial} |")
+  end
+
+  {
+    '001_collisions' => 'Unity 5.3.5f1',
+    '002_characters' => 'Blender',
+    '003_augmented_reality' => 'Unity 5.4.0f1',
+    '004_slippy_maps' => 'PokemonMap.unitypackage'
+  }.each do |tutorial, requirement|
+    errors << "TOOLCHAIN.md missing #{requirement} for #{tutorial}" unless toolchain.include?(requirement)
+  end
+
+  %w[Kudan camera location].each do |term|
+    errors << "TOOLCHAIN.md must document #{term} assumptions" unless toolchain.match?(/#{Regexp.escape(term)}/i)
+  end
+end
 
 if errors.any?
   warn errors.join("\n")

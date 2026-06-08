@@ -28,6 +28,4 @@ attribute.
 
 ## Follow-Up Candidates
 
-- Add a top-level matrix of Unity, Blender, AR SDK, and map SDK requirements.
-- Record the Unity editor versions needed for each sample.
 - Document asset origin and licensing assumptions per tutorial.
