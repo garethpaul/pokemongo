@@ -2,6 +2,8 @@
 
 ## 2026-06-08
 
+- Added per-tutorial screenshot inventory validation so checked-in screenshots
+  under `screenshots/<tutorial-id>/` stay referenced by tutorial READMEs.
 - Added `TOOLCHAIN.md` and validation coverage for Unity, Blender, Kudan,
   camera, location, and map package assumptions across the tutorial sequence.
 - Added `make check` as an alias for the existing tutorial asset verification gate.

@@ -15,6 +15,7 @@ tutorials.each do |tutorial|
 
   content = File.read(readme)
   image_tags = content.scan(/<img\b[^>]*>/i)
+  referenced_images = []
 
   image_tags.each do |tag|
     src = tag[/\ssrc=(["'])(.*?)\1/i, 2]
@@ -30,7 +31,25 @@ tutorials.each do |tutorial|
     next if src.start_with?('http://', 'https://')
 
     target = File.expand_path(src, tutorial)
+    referenced_images << target
     errors << "#{readme} references missing image #{src}" unless File.file?(target)
+  end
+
+  tutorial_id = tutorial[/\A\d{3}/]
+  screenshot_dir = File.join('screenshots', tutorial_id)
+  if File.directory?(screenshot_dir)
+    screenshots = Dir.glob(File.join(screenshot_dir, '*')).select { |path| File.file?(path) }
+
+    if screenshots.any? && referenced_images.empty?
+      errors << "#{readme} must reference at least one local screenshot from #{screenshot_dir}"
+    end
+
+    screenshots.each do |screenshot|
+      expanded_screenshot = File.expand_path(screenshot)
+      next if referenced_images.include?(expanded_screenshot)
+
+      errors << "#{readme} does not reference screenshot #{screenshot}"
+    end
   end
 end
 
@@ -43,6 +62,7 @@ require_file(errors, '003_augmented_reality/AR Example Pokemon Go/Assets/Scenes/
 require_file(errors, '004_slippy_maps/PokemonMap.unitypackage', '004_slippy_maps is missing PokemonMap.unitypackage')
 require_file(errors, 'ASSET_NOTICES.md', 'ASSET_NOTICES.md is missing')
 require_file(errors, 'docs/plans/2026-06-08-asset-notices-baseline.md', 'canonical docs/plans asset notice plan is missing')
+require_file(errors, 'docs/plans/2026-06-08-screenshot-inventory-validation.md', 'canonical docs/plans screenshot inventory plan is missing')
 require_file(errors, 'TOOLCHAIN.md', 'TOOLCHAIN.md is missing')
 
 if File.file?('TOOLCHAIN.md')
@@ -80,6 +100,13 @@ if File.file?('docs/plans/2026-06-08-asset-notices-baseline.md')
   plan = File.read('docs/plans/2026-06-08-asset-notices-baseline.md')
   unless plan.include?('Status: Completed') && plan.include?('make check')
     errors << 'canonical docs/plans asset notice plan must be completed and record make check'
+  end
+end
+
+if File.file?('docs/plans/2026-06-08-screenshot-inventory-validation.md')
+  plan = File.read('docs/plans/2026-06-08-screenshot-inventory-validation.md')
+  unless plan.include?('Status: Completed') && plan.include?('make check')
+    errors << 'canonical docs/plans screenshot inventory plan must be completed and record make check'
   end
 end
 

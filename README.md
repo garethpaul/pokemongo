@@ -62,8 +62,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 - Run `make check` or `make verify` before committing tutorial structure, screenshot, or asset-reference changes.
 - The verification gate checks README image references, the expected Unity,
-  Blender, and Unity package artifacts, the top-level toolchain matrix, and
-  asset-notice coverage without requiring Unity to be installed.
+  Blender, and Unity package artifacts, per-tutorial screenshot inventory, the
+  top-level toolchain matrix, and asset-notice coverage without requiring Unity
+  to be installed.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -84,6 +85,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
 - See `CHANGES.md` for maintenance history.
 - See `docs/plans/2026-06-08-asset-notices-baseline.md` for the current
   canonical completed engineering plan.
+- See `docs/plans/2026-06-08-screenshot-inventory-validation.md` for the
+  screenshot inventory guard.
 - See `plans/2026-06-08-toolchain-matrix-validation.md` for the current
   toolchain matrix validation baseline.
 
