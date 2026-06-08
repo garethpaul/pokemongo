@@ -1,5 +1,8 @@
 # Tutorials
 
+<!-- README-OVERVIEW-IMAGE -->
+![Project overview](docs/readme-overview.svg)
+
 # 1. Tutorial 001 in this directory shows you how you can do some simple collision detection.
 
 <img src="screenshots/001.jpg" />
@@ -15,7 +18,6 @@
 # 4. Tutorial 004 shows how to create 3D mapping app with 3D objects.
 
 <img src="screenshots/004/001.jpg" width="700px">
-
 
 Pokémon is a registered trademark of Nintendo (1995 - Present).
 This project is in no way affiliated with Nintendo or supported by Nintendo. This is a fan made project created free and for the free enjoyment of Pokémon fans and Gaming Developers.

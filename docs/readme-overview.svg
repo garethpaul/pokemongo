@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">pokemongo project overview</title>
+  <desc id="desc">Generated overview of the repository purpose, code shape, entry points, and verification surfaces.</desc>
+  <rect width="1200" height="675" fill="#f8fafc"/>
+  <rect x="32" y="32" width="1136" height="611" rx="24" fill="#ffffff" stroke="#d1d5db" stroke-width="2"/>
+  <rect x="32" y="32" width="1136" height="126" rx="24" fill="#111827"/>
+  <path d="M32 134h1136v24H32z" fill="#111827"/>
+  <circle cx="1062" cy="82" r="18" fill="#2563eb"/>
+  <circle cx="1110" cy="82" r="18" fill="#10b981"/>
+  <circle cx="1014" cy="82" r="18" fill="#f97316"/>
+  <text x="76" y="82" font-size="36" fill="#ffffff" font-weight="700">pokemongo</text>
+  <text x="76" y="124" font-size="20" fill="#cbd5e1">public sample, documentation, or</text>
+<text x="76" y="156" font-size="20" fill="#cbd5e1">utility project</text>
+  <text x="76" y="206" font-size="24" fill="#111827">A series of tutorials on the basics of replicating Pokemon Go</text>
+
+  <rect x="76" y="286" width="316" height="276" rx="14" fill="#eff6ff" stroke="#bfdbfe"/>
+  <text x="102" y="328" font-size="24" font-weight="700" fill="#1d4ed8">Code Shape</text>
+  <text x="102" y="370" font-size="19" fill="#1f2937">Languages: C# (1), JavaScript (1)</text>
+  <text x="102" y="430" font-size="19" fill="#1f2937">Source: 001_collisions,</text>
+<text x="102" y="454" font-size="19" fill="#1f2937">002_characters,</text>
+  <text x="102" y="490" font-size="19" fill="#1f2937">Manifests: None detected</text>
+
+  <rect x="442" y="286" width="316" height="276" rx="14" fill="#ecfdf5" stroke="#bbf7d0"/>
+  <text x="468" y="328" font-size="24" font-weight="700" fill="#047857">How It Runs</text>
+  <text x="468" y="370" font-size="19" fill="#1f2937">Entry points: None detected</text>
+  <text x="468" y="466" font-size="19" fill="#1f2937">Tests: None detected</text>
+
+  <rect x="808" y="286" width="316" height="276" rx="14" fill="#fff7ed" stroke="#fed7aa"/>
+  <text x="834" y="328" font-size="24" font-weight="700" fill="#c2410c">Review Focus</text>
+  <text x="834" y="370" font-size="19" fill="#1f2937">Integrations: None detected</text>
+  <text x="834" y="466" font-size="19" fill="#1f2937">Sensitive surfaces: file_parsing,</text>
+<text x="834" y="490" font-size="19" fill="#1f2937">mobile_privacy</text>
+
+  <path d="M392 424h50" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+  <path d="M430 412l18 12-18 12z" fill="#94a3b8"/>
+  <path d="M758 424h50" stroke="#94a3b8" stroke-width="4" stroke-linecap="round"/>
+  <path d="M796 412l18 12-18 12z" fill="#94a3b8"/>
+  <text x="76" y="608" font-size="18" fill="#475569">Generated from repository source, manifests, README, and GitHub metadata.</text>
+</svg>
