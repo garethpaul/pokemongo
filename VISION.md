@@ -40,7 +40,7 @@ AR and mapping tutorials can involve camera, location, and device permissions.
 Examples should keep permissions visible and avoid collecting or uploading user
 location or camera data by default.
 
-## What We Will Not Merge For Now
+## What We Will Not Merge (For Now)
 
 - Trademark-confusing branding changes
 - Undocumented third-party assets
