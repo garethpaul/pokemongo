@@ -40,7 +40,6 @@ Canonical security policy and reporting:
 
 - [`SECURITY.md`](SECURITY.md)
 
-
 AR and mapping tutorials can involve camera, location, and device permissions.
 Examples should keep permissions visible and avoid collecting or uploading user
 location or camera data by default.
