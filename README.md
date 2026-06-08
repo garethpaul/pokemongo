@@ -56,7 +56,7 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 ## Testing and Verification
 
-- Run `make verify` before committing tutorial structure, screenshot, or asset-reference changes.
+- Run `make check` or `make verify` before committing tutorial structure, screenshot, or asset-reference changes.
 - The verification gate checks README image references, the expected Unity,
   Blender, and Unity package artifacts, and the top-level toolchain matrix
   without requiring Unity to be installed.

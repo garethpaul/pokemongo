@@ -17,7 +17,7 @@ Priority:
 
 - Preserve the numbered tutorial structure
 - Keep screenshots and asset references available
-- Maintain `make verify` as the local tutorial asset inventory gate
+- Maintain `make check` and `make verify` as the local tutorial asset inventory gates
 - Maintain the non-affiliation and fan-project disclaimer
 - Document Unity, Blender, SDK, camera, and location assumptions for each tutorial
 
