@@ -11,7 +11,7 @@ Included in this project:
 
 1. Install Unity https://unity3d.com
 2. Open this project
-3. Open the scene "PokemonThrows"
+3. Open the scene `PokemonThrow.unity`
 
 # Starting from Scratch
 

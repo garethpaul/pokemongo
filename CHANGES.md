@@ -6,6 +6,8 @@
   under `screenshots/<tutorial-id>/` stay referenced by tutorial READMEs.
 - Added loose screenshot inventory validation so standalone files like
   `screenshots/001.jpg` stay documented in top-level notices.
+- Added Unity scene-name validation so tutorial READMEs must mention the
+  checked-in `.unity` scene files they ask readers to open.
 - Added `TOOLCHAIN.md` and validation coverage for Unity, Blender, Kudan,
   camera, location, and map package assumptions across the tutorial sequence.
 - Added `make check` as an alias for the existing tutorial asset verification gate.

@@ -23,6 +23,7 @@ Priority:
 - Preserve the numbered tutorial structure
 - Keep screenshots and asset references available and referenced
 - Keep loose standalone screenshots documented in top-level notices
+- Keep tutorial README scene names aligned with checked-in Unity scenes
 - Maintain `make check` and `make verify` as the local tutorial asset inventory gates
 - Maintain the non-affiliation and fan-project disclaimer
 - Keep asset ownership and reuse assumptions explicit in `ASSET_NOTICES.md`

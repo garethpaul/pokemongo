@@ -64,7 +64,19 @@ require_file(errors, 'ASSET_NOTICES.md', 'ASSET_NOTICES.md is missing')
 require_file(errors, 'docs/plans/2026-06-08-asset-notices-baseline.md', 'canonical docs/plans asset notice plan is missing')
 require_file(errors, 'docs/plans/2026-06-08-screenshot-inventory-validation.md', 'canonical docs/plans screenshot inventory plan is missing')
 require_file(errors, 'docs/plans/2026-06-09-loose-screenshot-inventory.md', 'canonical docs/plans loose screenshot plan is missing')
+require_file(errors, 'docs/plans/2026-06-09-unity-scene-reference-validation.md', 'canonical docs/plans Unity scene reference plan is missing')
 require_file(errors, 'TOOLCHAIN.md', 'TOOLCHAIN.md is missing')
+
+{
+  '001_collisions' => '001_collisions/Assets/Scenes/PokemonThrow.unity',
+  '003_augmented_reality' => '003_augmented_reality/AR Example Pokemon Go/Assets/Scenes/PokemonScene.unity'
+}.each do |tutorial, scene_path|
+  readme = File.join(tutorial, 'README.md')
+  next unless File.file?(readme)
+
+  scene_name = File.basename(scene_path)
+  errors << "#{readme} must mention Unity scene #{scene_name}" unless File.read(readme).include?(scene_name)
+end
 
 loose_screenshots = Dir.glob(File.join('screenshots', '*')).select { |path| File.file?(path) }.sort
 unless loose_screenshots.empty?
@@ -127,6 +139,13 @@ if File.file?('docs/plans/2026-06-09-loose-screenshot-inventory.md')
   plan = File.read('docs/plans/2026-06-09-loose-screenshot-inventory.md')
   unless plan.include?('Status: Completed') && plan.include?('make check')
     errors << 'canonical docs/plans loose screenshot plan must be completed and record make check'
+  end
+end
+
+if File.file?('docs/plans/2026-06-09-unity-scene-reference-validation.md')
+  plan = File.read('docs/plans/2026-06-09-unity-scene-reference-validation.md')
+  unless plan.include?('Status: Completed') && plan.include?('make check')
+    errors << 'canonical docs/plans Unity scene reference plan must be completed and record make check'
   end
 end
 
