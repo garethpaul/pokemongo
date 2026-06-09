@@ -22,6 +22,7 @@ Priority:
 
 - Preserve the numbered tutorial structure
 - Keep screenshots and asset references available and referenced
+- Keep screenshot image assets non-executable
 - Keep loose standalone screenshots documented in top-level notices
 - Keep tutorial README scene names aligned with checked-in Unity scenes
 - Keep `TOOLCHAIN.md` aligned with Unity `ProjectVersion.txt` editor versions
@@ -33,7 +34,7 @@ Priority:
 Next priorities:
 
 - Expand the top-level setup matrix for required tools per tutorial
-- Clarify which assets are original, third-party, or placeholders
+- Clarify which assets are original, third-party, placeholders, or archived media
 - Add troubleshooting notes for missing SDKs and Unity package imports
 - Keep each tutorial runnable independently where possible
 

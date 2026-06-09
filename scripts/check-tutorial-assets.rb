@@ -72,6 +72,7 @@ require_file(errors, 'docs/plans/2026-06-08-screenshot-inventory-validation.md',
 require_file(errors, 'docs/plans/2026-06-09-loose-screenshot-inventory.md', 'canonical docs/plans loose screenshot plan is missing')
 require_file(errors, 'docs/plans/2026-06-09-unity-scene-reference-validation.md', 'canonical docs/plans Unity scene reference plan is missing')
 require_file(errors, 'docs/plans/2026-06-09-unity-version-toolchain-validation.md', 'canonical docs/plans Unity version toolchain plan is missing')
+require_file(errors, 'docs/plans/2026-06-09-screenshot-permission-validation.md', 'canonical docs/plans screenshot permission plan is missing')
 require_file(errors, 'TOOLCHAIN.md', 'TOOLCHAIN.md is missing')
 
 {
@@ -95,6 +96,13 @@ unless loose_screenshots.empty?
       errors << "#{doc_path} must mention loose screenshot #{screenshot}" unless content.include?(screenshot)
     end
   end
+end
+
+screenshot_files = Dir.glob(File.join('screenshots', '**', '*')).select { |path| File.file?(path) }.sort
+screenshot_files.each do |screenshot|
+  next if (File.stat(screenshot).mode & 0o111).zero?
+
+  errors << "#{screenshot} must not be executable"
 end
 
 if File.file?('TOOLCHAIN.md')
@@ -173,6 +181,13 @@ if File.file?('docs/plans/2026-06-09-unity-version-toolchain-validation.md')
   plan = File.read('docs/plans/2026-06-09-unity-version-toolchain-validation.md')
   unless plan.include?('Status: Completed') && plan.include?('make check')
     errors << 'canonical docs/plans Unity version toolchain plan must be completed and record make check'
+  end
+end
+
+if File.file?('docs/plans/2026-06-09-screenshot-permission-validation.md')
+  plan = File.read('docs/plans/2026-06-09-screenshot-permission-validation.md')
+  unless plan.include?('Status: Completed') && plan.include?('make check')
+    errors << 'canonical docs/plans screenshot permission plan must be completed and record make check'
   end
 end
 
