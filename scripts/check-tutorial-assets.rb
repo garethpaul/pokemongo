@@ -3,6 +3,10 @@
 
 errors = []
 tutorials = Dir.glob('[0-9][0-9][0-9]_*').select { |path| File.directory?(path) }.sort
+unity_project_versions = {
+  '001_collisions' => '001_collisions/ProjectSettings/ProjectVersion.txt',
+  '003_augmented_reality' => '003_augmented_reality/AR Example Pokemon Go/ProjectSettings/ProjectVersion.txt'
+}.freeze
 
 def require_file(errors, path, message)
   errors << message unless File.file?(path)
@@ -53,11 +57,13 @@ tutorials.each do |tutorial|
   end
 end
 
-require_file(errors, '001_collisions/ProjectSettings/ProjectVersion.txt', '001_collisions is missing Unity ProjectVersion.txt')
+unity_project_versions.each do |tutorial, version_path|
+  require_file(errors, version_path, "#{tutorial} is missing Unity ProjectVersion.txt")
+end
+
 require_file(errors, '001_collisions/Assets/Scenes/PokemonThrow.unity', '001_collisions is missing PokemonThrow.unity')
 require_file(errors, '002_characters/Pikachu.blend', '002_characters is missing Pikachu.blend')
 require_file(errors, '002_characters/Pokeball.blend', '002_characters is missing Pokeball.blend')
-require_file(errors, '003_augmented_reality/AR Example Pokemon Go/ProjectSettings/ProjectVersion.txt', '003_augmented_reality is missing Unity ProjectVersion.txt')
 require_file(errors, '003_augmented_reality/AR Example Pokemon Go/Assets/Scenes/PokemonScene.unity', '003_augmented_reality is missing PokemonScene.unity')
 require_file(errors, '004_slippy_maps/PokemonMap.unitypackage', '004_slippy_maps is missing PokemonMap.unitypackage')
 require_file(errors, 'ASSET_NOTICES.md', 'ASSET_NOTICES.md is missing')
@@ -65,6 +71,7 @@ require_file(errors, 'docs/plans/2026-06-08-asset-notices-baseline.md', 'canonic
 require_file(errors, 'docs/plans/2026-06-08-screenshot-inventory-validation.md', 'canonical docs/plans screenshot inventory plan is missing')
 require_file(errors, 'docs/plans/2026-06-09-loose-screenshot-inventory.md', 'canonical docs/plans loose screenshot plan is missing')
 require_file(errors, 'docs/plans/2026-06-09-unity-scene-reference-validation.md', 'canonical docs/plans Unity scene reference plan is missing')
+require_file(errors, 'docs/plans/2026-06-09-unity-version-toolchain-validation.md', 'canonical docs/plans Unity version toolchain plan is missing')
 require_file(errors, 'TOOLCHAIN.md', 'TOOLCHAIN.md is missing')
 
 {
@@ -108,6 +115,19 @@ if File.file?('TOOLCHAIN.md')
   %w[Kudan camera location].each do |term|
     errors << "TOOLCHAIN.md must document #{term} assumptions" unless toolchain.match?(/#{Regexp.escape(term)}/i)
   end
+
+  unity_project_versions.each do |tutorial, version_path|
+    next unless File.file?(version_path)
+
+    version = File.read(version_path)[/^m_EditorVersion:\s*(\S+)/, 1]
+    if version.nil? || version.empty?
+      errors << "#{version_path} is missing m_EditorVersion"
+      next
+    end
+
+    row = toolchain.lines.find { |line| line.start_with?("| #{tutorial} |") }
+    errors << "TOOLCHAIN.md missing Unity editor version #{version} for #{tutorial}" unless row&.include?(version)
+  end
 end
 
 if File.file?('ASSET_NOTICES.md')
@@ -146,6 +166,13 @@ if File.file?('docs/plans/2026-06-09-unity-scene-reference-validation.md')
   plan = File.read('docs/plans/2026-06-09-unity-scene-reference-validation.md')
   unless plan.include?('Status: Completed') && plan.include?('make check')
     errors << 'canonical docs/plans Unity scene reference plan must be completed and record make check'
+  end
+end
+
+if File.file?('docs/plans/2026-06-09-unity-version-toolchain-validation.md')
+  plan = File.read('docs/plans/2026-06-09-unity-version-toolchain-validation.md')
+  unless plan.include?('Status: Completed') && plan.include?('make check')
+    errors << 'canonical docs/plans Unity version toolchain plan must be completed and record make check'
   end
 end
 

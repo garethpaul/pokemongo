@@ -66,7 +66,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - The verification gate checks README image references, the expected Unity,
   Blender, and Unity package artifacts, per-tutorial screenshot inventory, the
   Unity scene names referenced by tutorial READMEs, the top-level toolchain
-  matrix, and asset-notice coverage without requiring Unity to be installed.
+  matrix, exact Unity editor versions from `ProjectVersion.txt`, and
+  asset-notice coverage without requiring Unity to be installed.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -93,6 +94,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   screenshot documentation checks.
 - See `docs/plans/2026-06-09-unity-scene-reference-validation.md` for tutorial
   Unity scene-name validation.
+- See `docs/plans/2026-06-09-unity-version-toolchain-validation.md` for Unity
+  editor-version validation against `TOOLCHAIN.md`.
 - See `plans/2026-06-08-toolchain-matrix-validation.md` for the current
   toolchain matrix validation baseline.
 

@@ -12,9 +12,9 @@ The goal is to preserve the tutorial value while keeping trademark, asset,
 toolchain, and SDK assumptions clear.
 
 Current baseline: `make check` verifies tutorial asset references, screenshot
-inventory, toolchain matrix coverage, asset-notice coverage, and canonical
-`docs/plans` records without requiring Unity, Blender, Xcode, or AR SDK
-installs.
+inventory, toolchain matrix coverage, exact Unity editor versions,
+asset-notice coverage, and canonical `docs/plans` records without requiring
+Unity, Blender, Xcode, or AR SDK installs.
 
 The current focus is:
 
@@ -24,6 +24,7 @@ Priority:
 - Keep screenshots and asset references available and referenced
 - Keep loose standalone screenshots documented in top-level notices
 - Keep tutorial README scene names aligned with checked-in Unity scenes
+- Keep `TOOLCHAIN.md` aligned with Unity `ProjectVersion.txt` editor versions
 - Maintain `make check` and `make verify` as the local tutorial asset inventory gates
 - Maintain the non-affiliation and fan-project disclaimer
 - Keep asset ownership and reuse assumptions explicit in `ASSET_NOTICES.md`
