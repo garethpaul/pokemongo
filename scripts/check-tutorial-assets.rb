@@ -63,7 +63,20 @@ require_file(errors, '004_slippy_maps/PokemonMap.unitypackage', '004_slippy_maps
 require_file(errors, 'ASSET_NOTICES.md', 'ASSET_NOTICES.md is missing')
 require_file(errors, 'docs/plans/2026-06-08-asset-notices-baseline.md', 'canonical docs/plans asset notice plan is missing')
 require_file(errors, 'docs/plans/2026-06-08-screenshot-inventory-validation.md', 'canonical docs/plans screenshot inventory plan is missing')
+require_file(errors, 'docs/plans/2026-06-09-loose-screenshot-inventory.md', 'canonical docs/plans loose screenshot plan is missing')
 require_file(errors, 'TOOLCHAIN.md', 'TOOLCHAIN.md is missing')
+
+loose_screenshots = Dir.glob(File.join('screenshots', '*')).select { |path| File.file?(path) }.sort
+unless loose_screenshots.empty?
+  {
+    'README.md' => File.file?('README.md') ? File.read('README.md') : '',
+    'ASSET_NOTICES.md' => File.file?('ASSET_NOTICES.md') ? File.read('ASSET_NOTICES.md') : ''
+  }.each do |doc_path, content|
+    loose_screenshots.each do |screenshot|
+      errors << "#{doc_path} must mention loose screenshot #{screenshot}" unless content.include?(screenshot)
+    end
+  end
+end
 
 if File.file?('TOOLCHAIN.md')
   toolchain = File.read('TOOLCHAIN.md')
@@ -107,6 +120,13 @@ if File.file?('docs/plans/2026-06-08-screenshot-inventory-validation.md')
   plan = File.read('docs/plans/2026-06-08-screenshot-inventory-validation.md')
   unless plan.include?('Status: Completed') && plan.include?('make check')
     errors << 'canonical docs/plans screenshot inventory plan must be completed and record make check'
+  end
+end
+
+if File.file?('docs/plans/2026-06-09-loose-screenshot-inventory.md')
+  plan = File.read('docs/plans/2026-06-09-loose-screenshot-inventory.md')
+  unless plan.include?('Status: Completed') && plan.include?('make check')
+    errors << 'canonical docs/plans loose screenshot plan must be completed and record make check'
   end
 end
 

@@ -57,6 +57,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - Check `TOOLCHAIN.md` before opening a tutorial in Unity or Blender.
 - Open Unity projects from `001_collisions` and `003_augmented_reality` with a compatible Unity editor.
 - Open Blender assets from `002_characters`, and import `004_slippy_maps/PokemonMap.unitypackage` from Unity.
+- `screenshots/001.jpg` is a standalone legacy overview screenshot; per-tutorial
+  screenshots live under `screenshots/<tutorial-id>/`.
 
 ## Testing and Verification
 
@@ -87,6 +89,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   canonical completed engineering plan.
 - See `docs/plans/2026-06-08-screenshot-inventory-validation.md` for the
   screenshot inventory guard.
+- See `docs/plans/2026-06-09-loose-screenshot-inventory.md` for standalone
+  screenshot documentation checks.
 - See `plans/2026-06-08-toolchain-matrix-validation.md` for the current
   toolchain matrix validation baseline.
 
