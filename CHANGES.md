@@ -8,6 +8,10 @@
   `screenshots/001.jpg` stay documented in top-level notices.
 - Added screenshot permission validation so archived image files cannot keep
   executable bits.
+- Added tutorial README setup validation so critical SDK, package, camera, and
+  location assumptions stay visible in the tutorial-local docs.
+- Added archived asset permission validation so Blender, Unity package, FBX,
+  and texture files cannot keep executable bits.
 - Added Unity scene-name validation so tutorial READMEs must mention the
   checked-in `.unity` scene files they ask readers to open.
 - Added Unity editor-version validation so `TOOLCHAIN.md` must match checked-in

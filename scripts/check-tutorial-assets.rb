@@ -7,6 +7,12 @@ unity_project_versions = {
   '001_collisions' => '001_collisions/ProjectSettings/ProjectVersion.txt',
   '003_augmented_reality' => '003_augmented_reality/AR Example Pokemon Go/ProjectSettings/ProjectVersion.txt'
 }.freeze
+tutorial_readme_requirements = {
+  '001_collisions' => ['Unity', 'PokemonThrow.unity'],
+  '002_characters' => ['Blender', 'Pikachu.blend', 'Pokeball.blend'],
+  '003_augmented_reality' => ['Kudan', 'camera', 'PokemonScene.unity'],
+  '004_slippy_maps' => ['PokemonMap.unitypackage', 'location']
+}.freeze
 
 def require_file(errors, path, message)
   errors << message unless File.file?(path)
@@ -73,6 +79,8 @@ require_file(errors, 'docs/plans/2026-06-09-loose-screenshot-inventory.md', 'can
 require_file(errors, 'docs/plans/2026-06-09-unity-scene-reference-validation.md', 'canonical docs/plans Unity scene reference plan is missing')
 require_file(errors, 'docs/plans/2026-06-09-unity-version-toolchain-validation.md', 'canonical docs/plans Unity version toolchain plan is missing')
 require_file(errors, 'docs/plans/2026-06-09-screenshot-permission-validation.md', 'canonical docs/plans screenshot permission plan is missing')
+require_file(errors, 'docs/plans/2026-06-09-tutorial-readme-setup-validation.md', 'canonical docs/plans tutorial README setup plan is missing')
+require_file(errors, 'docs/plans/2026-06-09-asset-permission-validation.md', 'canonical docs/plans asset permission plan is missing')
 require_file(errors, 'TOOLCHAIN.md', 'TOOLCHAIN.md is missing')
 
 {
@@ -103,6 +111,23 @@ screenshot_files.each do |screenshot|
   next if (File.stat(screenshot).mode & 0o111).zero?
 
   errors << "#{screenshot} must not be executable"
+end
+
+asset_files = Dir.glob(['**/*.blend', '**/*.unitypackage', '**/*.fbx', '**/*.FBX', '**/*.tga']).select { |path| File.file?(path) }.sort
+asset_files.each do |asset|
+  next if (File.stat(asset).mode & 0o111).zero?
+
+  errors << "#{asset} must not be executable"
+end
+
+tutorial_readme_requirements.each do |tutorial, required_terms|
+  readme = File.join(tutorial, 'README.md')
+  next unless File.file?(readme)
+
+  content = File.read(readme)
+  required_terms.each do |term|
+    errors << "#{readme} must document #{term} setup assumption" unless content.match?(/#{Regexp.escape(term)}/i)
+  end
 end
 
 if File.file?('TOOLCHAIN.md')
@@ -188,6 +213,20 @@ if File.file?('docs/plans/2026-06-09-screenshot-permission-validation.md')
   plan = File.read('docs/plans/2026-06-09-screenshot-permission-validation.md')
   unless plan.include?('Status: Completed') && plan.include?('make check')
     errors << 'canonical docs/plans screenshot permission plan must be completed and record make check'
+  end
+end
+
+if File.file?('docs/plans/2026-06-09-tutorial-readme-setup-validation.md')
+  plan = File.read('docs/plans/2026-06-09-tutorial-readme-setup-validation.md')
+  unless plan.include?('Status: Completed') && plan.include?('make check')
+    errors << 'canonical docs/plans tutorial README setup plan must be completed and record make check'
+  end
+end
+
+if File.file?('docs/plans/2026-06-09-asset-permission-validation.md')
+  plan = File.read('docs/plans/2026-06-09-asset-permission-validation.md')
+  unless plan.include?('Status: Completed') && plan.include?('make check')
+    errors << 'canonical docs/plans asset permission plan must be completed and record make check'
   end
 end
 

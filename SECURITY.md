@@ -37,6 +37,8 @@ For web services, APIs, sockets, or scraping workflows, prioritize reports invol
 
 Screenshot image assets should stay non-executable so archived media cannot be
 confused with runnable tutorial scripts or tools.
+Tutorial-local setup docs should keep camera and location assumptions visible
+near the steps that ask readers to open AR or map examples.
 
 ## Dependency and Supply Chain Security
 

@@ -12,8 +12,9 @@ There are number of map options inside the app including VirtualEarth, OpenStree
 ## Quick Steps
 
 1. Install Unity
-2. Get the SDK in this directy.
-3. Open the scene '/scenes/PokemonScene.unity'
+2. Import `PokemonMap.unitypackage`
+3. Review the location and map behavior before running the tutorial
+4. Open the scene included in the package
 
 ### Screenshots
 

@@ -14,7 +14,7 @@ Included in this project:
 
 ## Getting started
 1. Download Blender
-2. Open up Pikachu or Pokeball
+2. Open up `Pikachu.blend` or `Pokeball.blend`
 3. Open Edit Object
 4. In Scenes you can manipulate the Object.
 

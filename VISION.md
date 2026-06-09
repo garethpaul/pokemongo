@@ -23,9 +23,12 @@ Priority:
 - Preserve the numbered tutorial structure
 - Keep screenshots and asset references available and referenced
 - Keep screenshot image assets non-executable
+- Keep archived Blender, Unity package, FBX, and texture assets non-executable
 - Keep loose standalone screenshots documented in top-level notices
 - Keep tutorial README scene names aligned with checked-in Unity scenes
 - Keep `TOOLCHAIN.md` aligned with Unity `ProjectVersion.txt` editor versions
+- Keep tutorial-local setup, SDK, package, camera, and location assumptions
+  explicit
 - Maintain `make check` and `make verify` as the local tutorial asset inventory gates
 - Maintain the non-affiliation and fan-project disclaimer
 - Keep asset ownership and reuse assumptions explicit in `ASSET_NOTICES.md`

@@ -25,6 +25,9 @@ distribution claims, imply official branding, or hide third-party ownership.
   tutorial docs.
 - Keep loose screenshots such as `screenshots/001.jpg` documented in both this
   notice file and the top-level README.
+- Keep archived Blender, Unity package, FBX, texture, and screenshot files
+  non-executable unless a future toolchain note explains why executable bits are
+  required.
 - Do not commit device provisioning profiles, SDK license files, credentials, or
   private user location/camera data.
 - Use owned or clearly licensed replacement assets for production or commercial

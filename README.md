@@ -68,8 +68,12 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   Unity scene names referenced by tutorial READMEs, the top-level toolchain
   matrix, exact Unity editor versions from `ProjectVersion.txt`, and
   asset-notice coverage without requiring Unity to be installed.
+- Tutorial READMEs must name their critical setup files, SDKs, and permission
+  assumptions so readers do not have to infer them from the top-level matrix.
 - Screenshot inventory files must stay non-executable so image assets do not
   carry script-like permissions.
+- Archived Blender, Unity package, FBX, and texture assets must also stay
+  non-executable so tutorial media cannot carry script-like permissions.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -100,6 +104,10 @@ When the required SDK or runtime is unavailable, use static checks and source re
   editor-version validation against `TOOLCHAIN.md`.
 - See `docs/plans/2026-06-09-screenshot-permission-validation.md` for
   screenshot permission validation.
+- See `docs/plans/2026-06-09-tutorial-readme-setup-validation.md` for
+  per-tutorial setup assumption validation.
+- See `docs/plans/2026-06-09-asset-permission-validation.md` for archived
+  tutorial asset permission validation.
 - See `plans/2026-06-08-toolchain-matrix-validation.md` for the current
   toolchain matrix validation baseline.
 

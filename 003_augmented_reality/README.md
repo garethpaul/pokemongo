@@ -11,8 +11,9 @@ Included in this project:
 
 1. Install Unity
 2. Get the SDK Kudan at Kudan.eu
-3. Open the 003_augmented_reality
-4. Open the scene '/scenes/PokemonScene.unity'
+3. Confirm camera access is acceptable for the AR tutorial
+4. Open the 003_augmented_reality
+5. Open the scene '/scenes/PokemonScene.unity'
 
 ### Screenshots
 
