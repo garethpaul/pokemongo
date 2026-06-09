@@ -1,5 +1,11 @@
 # Changes
 
+## 2026-06-09
+
+- Added Unity project file permission validation so scenes, settings,
+  materials, source files, and `.meta` files cannot keep executable bits.
+- Added a static `make build` gate for Unity-free tutorial validation.
+
 ## 2026-06-08
 
 - Added per-tutorial screenshot inventory validation so checked-in screenshots

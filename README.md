@@ -63,6 +63,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 ## Testing and Verification
 
 - Run `make check` or `make verify` before committing tutorial structure, screenshot, or asset-reference changes.
+- Run `make build` for the static Unity-free tutorial validation gate; it uses
+  the same dependency-free validator as `make lint`.
 - The verification gate checks README image references, the expected Unity,
   Blender, and Unity package artifacts, per-tutorial screenshot inventory, the
   Unity scene names referenced by tutorial READMEs, the top-level toolchain
@@ -74,6 +76,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   carry script-like permissions.
 - Archived Blender, Unity package, FBX, and texture assets must also stay
   non-executable so tutorial media cannot carry script-like permissions.
+- Unity project files, source files, material files, and `.meta` files must
+  also stay non-executable because they are data or source inputs here.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -108,6 +112,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   per-tutorial setup assumption validation.
 - See `docs/plans/2026-06-09-asset-permission-validation.md` for archived
   tutorial asset permission validation.
+- See `docs/plans/2026-06-09-unity-project-permission-validation.md` for Unity
+  project file permission validation and the static `make build` gate.
 - See `plans/2026-06-08-toolchain-matrix-validation.md` for the current
   toolchain matrix validation baseline.
 

@@ -1,4 +1,4 @@
-.PHONY: check lint test verify
+.PHONY: check lint test build verify
 
 check: verify
 
@@ -7,4 +7,6 @@ lint:
 
 test: lint
 
-verify: lint
+build: lint
+
+verify: lint test build

@@ -37,6 +37,8 @@ For web services, APIs, sockets, or scraping workflows, prioritize reports invol
 
 Screenshot image assets should stay non-executable so archived media cannot be
 confused with runnable tutorial scripts or tools.
+Unity project files, source files, material files, and `.meta` files should
+also stay non-executable because they are source or data inputs in this archive.
 Tutorial-local setup docs should keep camera and location assumptions visible
 near the steps that ask readers to open AR or map examples.
 

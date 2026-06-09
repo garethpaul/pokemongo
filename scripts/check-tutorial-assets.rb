@@ -81,6 +81,7 @@ require_file(errors, 'docs/plans/2026-06-09-unity-version-toolchain-validation.m
 require_file(errors, 'docs/plans/2026-06-09-screenshot-permission-validation.md', 'canonical docs/plans screenshot permission plan is missing')
 require_file(errors, 'docs/plans/2026-06-09-tutorial-readme-setup-validation.md', 'canonical docs/plans tutorial README setup plan is missing')
 require_file(errors, 'docs/plans/2026-06-09-asset-permission-validation.md', 'canonical docs/plans asset permission plan is missing')
+require_file(errors, 'docs/plans/2026-06-09-unity-project-permission-validation.md', 'canonical docs/plans Unity project permission plan is missing')
 require_file(errors, 'TOOLCHAIN.md', 'TOOLCHAIN.md is missing')
 
 {
@@ -118,6 +119,21 @@ asset_files.each do |asset|
   next if (File.stat(asset).mode & 0o111).zero?
 
   errors << "#{asset} must not be executable"
+end
+
+unity_project_files = Dir.glob([
+  '**/*.unity',
+  '**/*.asset',
+  '**/*.mat',
+  '**/*.physicMaterial',
+  '**/*.cs',
+  '**/*.js',
+  '**/*.meta'
+]).select { |path| File.file?(path) }.sort
+unity_project_files.each do |project_file|
+  next if (File.stat(project_file).mode & 0o111).zero?
+
+  errors << "#{project_file} must not be executable"
 end
 
 tutorial_readme_requirements.each do |tutorial, required_terms|
@@ -227,6 +243,13 @@ if File.file?('docs/plans/2026-06-09-asset-permission-validation.md')
   plan = File.read('docs/plans/2026-06-09-asset-permission-validation.md')
   unless plan.include?('Status: Completed') && plan.include?('make check')
     errors << 'canonical docs/plans asset permission plan must be completed and record make check'
+  end
+end
+
+if File.file?('docs/plans/2026-06-09-unity-project-permission-validation.md')
+  plan = File.read('docs/plans/2026-06-09-unity-project-permission-validation.md')
+  unless plan.include?('Status: Completed') && plan.include?('make check')
+    errors << 'canonical docs/plans Unity project permission plan must be completed and record make check'
   end
 end
 
