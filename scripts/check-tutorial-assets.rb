@@ -30,6 +30,7 @@ tutorials.each do |tutorial|
   image_tags.each do |tag|
     src = tag[/\ssrc=(["'])(.*?)\1/i, 2]
     width = tag[/\swidth=(["'])(.*?)\1/i, 2]
+    alt = tag[/\salt=(["'])(.*?)\1/i, 2]
 
     if src.nil? || src.empty?
       errors << "#{readme} has an image tag without a quoted src: #{tag}"
@@ -37,6 +38,7 @@ tutorials.each do |tutorial|
     end
 
     errors << "#{readme} image tag for #{src} is missing a quoted width attribute" if width.nil? || width.empty?
+    errors << "#{readme} image tag for #{src} is missing a quoted alt attribute" if alt.nil? || alt.strip.empty?
 
     next if src.start_with?('http://', 'https://')
 
@@ -82,6 +84,7 @@ require_file(errors, 'docs/plans/2026-06-09-screenshot-permission-validation.md'
 require_file(errors, 'docs/plans/2026-06-09-tutorial-readme-setup-validation.md', 'canonical docs/plans tutorial README setup plan is missing')
 require_file(errors, 'docs/plans/2026-06-09-asset-permission-validation.md', 'canonical docs/plans asset permission plan is missing')
 require_file(errors, 'docs/plans/2026-06-09-unity-project-permission-validation.md', 'canonical docs/plans Unity project permission plan is missing')
+require_file(errors, 'docs/plans/2026-06-09-tutorial-image-alt-validation.md', 'canonical docs/plans tutorial image alt plan is missing')
 require_file(errors, 'TOOLCHAIN.md', 'TOOLCHAIN.md is missing')
 
 {
@@ -250,6 +253,13 @@ if File.file?('docs/plans/2026-06-09-unity-project-permission-validation.md')
   plan = File.read('docs/plans/2026-06-09-unity-project-permission-validation.md')
   unless plan.include?('Status: Completed') && plan.include?('make check')
     errors << 'canonical docs/plans Unity project permission plan must be completed and record make check'
+  end
+end
+
+if File.file?('docs/plans/2026-06-09-tutorial-image-alt-validation.md')
+  plan = File.read('docs/plans/2026-06-09-tutorial-image-alt-validation.md')
+  unless plan.include?('Status: Completed') && plan.include?('make check')
+    errors << 'canonical docs/plans tutorial image alt plan must be completed and record make check'
   end
 end
 

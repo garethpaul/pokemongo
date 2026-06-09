@@ -12,9 +12,9 @@ The goal is to preserve the tutorial value while keeping trademark, asset,
 toolchain, and SDK assumptions clear.
 
 Current baseline: `make check` verifies tutorial asset references, screenshot
-inventory, toolchain matrix coverage, exact Unity editor versions,
-asset-notice coverage, and canonical `docs/plans` records without requiring
-Unity, Blender, Xcode, or AR SDK installs.
+inventory, screenshot alt text, toolchain matrix coverage, exact Unity editor
+versions, asset-notice coverage, and canonical `docs/plans` records without
+requiring Unity, Blender, Xcode, or AR SDK installs.
 
 The current focus is:
 
@@ -22,6 +22,7 @@ Priority:
 
 - Preserve the numbered tutorial structure
 - Keep screenshots and asset references available and referenced
+- Keep tutorial screenshots labelled with meaningful alt text
 - Keep screenshot image assets non-executable
 - Keep archived Blender, Unity package, FBX, and texture assets non-executable
 - Keep Unity project files, source files, material files, and `.meta` files

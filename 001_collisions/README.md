@@ -32,5 +32,5 @@ Included in this project:
 
 
 ### Screenshots
-<img src="../screenshots/001/001.png" width="700px">
-<img src="../screenshots/001/002.png" width="700px">
+<img src="../screenshots/001/001.png" alt="Pokemon collision tutorial scene with Pikachu and a Pokeball" width="700px">
+<img src="../screenshots/001/002.png" alt="Collision tutorial setup showing the Pokeball and Pikachu assets" width="700px">

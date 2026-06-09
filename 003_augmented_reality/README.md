@@ -17,4 +17,4 @@ Included in this project:
 
 ### Screenshots
 
-<img src="../screenshots/003/001.png" width="700px">
+<img src="../screenshots/003/001.png" alt="Augmented reality tutorial scene placing Pikachu in a camera view" width="700px">

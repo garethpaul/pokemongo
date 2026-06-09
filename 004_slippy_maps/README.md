@@ -18,4 +18,4 @@ There are number of map options inside the app including VirtualEarth, OpenStree
 
 ### Screenshots
 
-<img src="../screenshots/004/001.jpg" width="700px">
+<img src="../screenshots/004/001.jpg" alt="Slippy map tutorial view showing a Pokemon map scene" width="700px">

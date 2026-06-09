@@ -67,9 +67,10 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   the same dependency-free validator as `make lint`.
 - The verification gate checks README image references, the expected Unity,
   Blender, and Unity package artifacts, per-tutorial screenshot inventory, the
-  Unity scene names referenced by tutorial READMEs, the top-level toolchain
-  matrix, exact Unity editor versions from `ProjectVersion.txt`, and
-  asset-notice coverage without requiring Unity to be installed.
+  tutorial screenshot `alt` text, the Unity scene names referenced by tutorial
+  READMEs, the top-level toolchain matrix, exact Unity editor versions from
+  `ProjectVersion.txt`, and asset-notice coverage without requiring Unity to be
+  installed.
 - Tutorial READMEs must name their critical setup files, SDKs, and permission
   assumptions so readers do not have to infer them from the top-level matrix.
 - Screenshot inventory files must stay non-executable so image assets do not
@@ -114,6 +115,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   tutorial asset permission validation.
 - See `docs/plans/2026-06-09-unity-project-permission-validation.md` for Unity
   project file permission validation and the static `make build` gate.
+- See `docs/plans/2026-06-09-tutorial-image-alt-validation.md` for tutorial
+  screenshot alt-text validation.
 - See `plans/2026-06-08-toolchain-matrix-validation.md` for the current
   toolchain matrix validation baseline.
 
