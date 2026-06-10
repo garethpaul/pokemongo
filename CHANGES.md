@@ -8,6 +8,8 @@
   another directory cannot scan unrelated files.
 - Added tutorial sequence validation so numbered tutorial directories must stay
   contiguous from `001` and listed in the top-level README.
+- Restored stable Unity metadata for the augmented-reality scene and added
+  asset-to-`.meta` pairing validation across checked-in Unity projects.
 
 ## 2026-06-09
 

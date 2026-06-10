@@ -96,6 +96,7 @@ require_file(errors, 'docs/plans/2026-06-09-unity-project-permission-validation.
 require_file(errors, 'docs/plans/2026-06-09-tutorial-image-alt-validation.md', 'canonical docs/plans tutorial image alt plan is missing')
 require_file(errors, 'docs/plans/2026-06-10-tutorial-sequence-validation.md', 'canonical docs/plans tutorial sequence plan is missing')
 require_file(errors, 'docs/plans/2026-06-10-hosted-tutorial-validation.md', 'canonical docs/plans hosted tutorial validation plan is missing')
+require_file(errors, 'docs/plans/2026-06-10-unity-metadata-validation.md', 'canonical docs/plans Unity metadata validation plan is missing')
 require_file(errors, '.github/workflows/check.yml', 'hosted tutorial validation workflow is missing')
 require_file(errors, 'TOOLCHAIN.md', 'TOOLCHAIN.md is missing')
 
@@ -169,6 +170,30 @@ unity_project_files.each do |project_file|
   next if (File.stat(project_file).mode & 0o111).zero?
 
   errors << "#{project_file} must not be executable"
+end
+
+unity_asset_roots = Dir.glob('[0-9][0-9][0-9]_*/**/Assets').select { |path| File.directory?(path) }
+unity_metadata_guids = {}
+unity_asset_roots.each do |asset_root|
+  Dir.glob(File.join(asset_root, '**', '*'), File::FNM_DOTMATCH).sort.each do |asset|
+    next if ['.', '..'].include?(File.basename(asset)) || asset.end_with?('.meta')
+
+    errors << "#{asset} is missing Unity metadata #{asset}.meta" unless File.file?("#{asset}.meta")
+  end
+
+  Dir.glob(File.join(asset_root, '**', '*.meta')).sort.each do |metadata|
+    asset = metadata.delete_suffix('.meta')
+    errors << "#{metadata} is orphaned Unity metadata" unless File.exist?(asset)
+
+    guid = File.read(metadata)[/^guid:\s*([0-9a-f]{32})$/, 1]
+    if guid.nil?
+      errors << "#{metadata} must declare a 32-character lowercase hexadecimal Unity guid"
+    elsif unity_metadata_guids.key?(guid)
+      errors << "#{metadata} duplicates Unity guid #{guid} from #{unity_metadata_guids.fetch(guid)}"
+    else
+      unity_metadata_guids[guid] = metadata
+    end
+  end
 end
 
 tutorial_readme_requirements.each do |tutorial, required_terms|
@@ -306,6 +331,13 @@ if File.file?('docs/plans/2026-06-10-hosted-tutorial-validation.md')
   plan = File.read('docs/plans/2026-06-10-hosted-tutorial-validation.md')
   unless plan.include?('Status: Completed') && plan.include?('make check')
     errors << 'canonical docs/plans hosted tutorial validation plan must be completed and record make check'
+  end
+end
+
+if File.file?('docs/plans/2026-06-10-unity-metadata-validation.md')
+  plan = File.read('docs/plans/2026-06-10-unity-metadata-validation.md')
+  unless plan.include?('Status: Completed') && plan.include?('make check')
+    errors << 'canonical docs/plans Unity metadata validation plan must be completed and record make check'
   end
 end
 

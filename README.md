@@ -84,6 +84,10 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   non-executable so tutorial media cannot carry script-like permissions.
 - Unity project files, source files, material files, and `.meta` files must
   also stay non-executable because they are data or source inputs here.
+- Every file and directory below a checked-in Unity `Assets` folder must keep
+  matching `.meta` metadata, and orphaned metadata is rejected, so Unity GUIDs
+  remain stable when the archive is cloned or imported. Metadata GUIDs must
+  also use Unity's lowercase 32-hex format and remain unique across projects.
 - The validator anchors recursive asset scans to the repository, so it can be
   invoked from any working directory without inspecting unrelated files.
 - The same gate protects the hosted workflow's read-only permission, pinned
@@ -130,6 +134,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   tutorial sequence validation.
 - See `docs/plans/2026-06-10-hosted-tutorial-validation.md` for hosted checks
   and repository-anchored asset scanning.
+- See `docs/plans/2026-06-10-unity-metadata-validation.md` for Unity asset and
+  `.meta` pairing validation.
 - See `plans/2026-06-08-toolchain-matrix-validation.md` for the current
   toolchain matrix validation baseline.
 
