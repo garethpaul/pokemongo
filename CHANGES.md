@@ -2,6 +2,10 @@
 
 ## 2026-06-10
 
+- Added hosted Unity-free tutorial validation with read-only permissions and a
+  pinned checkout action.
+- Anchored recursive asset validation to the repository so invocation from
+  another directory cannot scan unrelated files.
 - Added tutorial sequence validation so numbered tutorial directories must stay
   contiguous from `001` and listed in the top-level README.
 

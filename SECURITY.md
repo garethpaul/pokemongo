@@ -43,6 +43,9 @@ Tutorial-local setup docs should keep camera and location assumptions visible
 near the steps that ask readers to open AR or map examples.
 Numbered tutorial directories should stay contiguous and listed in the top-level
 README so readers do not miss permission-sensitive AR or location examples.
+Recursive asset validation is anchored to this repository so checks do not
+inspect unrelated caller-directory files. Hosted validation uses read-only
+repository access and a pinned checkout action.
 
 ## Dependency and Supply Chain Security
 

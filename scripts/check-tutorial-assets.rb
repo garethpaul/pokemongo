@@ -1,6 +1,9 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+ROOT_DIR = File.expand_path('..', __dir__)
+Dir.chdir(ROOT_DIR)
+
 errors = []
 tutorials = Dir.glob('[0-9][0-9][0-9]_*').select { |path| File.directory?(path) }.sort
 tutorial_ids = tutorials.map { |tutorial| tutorial[/\A\d{3}/] }
@@ -92,7 +95,22 @@ require_file(errors, 'docs/plans/2026-06-09-asset-permission-validation.md', 'ca
 require_file(errors, 'docs/plans/2026-06-09-unity-project-permission-validation.md', 'canonical docs/plans Unity project permission plan is missing')
 require_file(errors, 'docs/plans/2026-06-09-tutorial-image-alt-validation.md', 'canonical docs/plans tutorial image alt plan is missing')
 require_file(errors, 'docs/plans/2026-06-10-tutorial-sequence-validation.md', 'canonical docs/plans tutorial sequence plan is missing')
+require_file(errors, 'docs/plans/2026-06-10-hosted-tutorial-validation.md', 'canonical docs/plans hosted tutorial validation plan is missing')
+require_file(errors, '.github/workflows/check.yml', 'hosted tutorial validation workflow is missing')
 require_file(errors, 'TOOLCHAIN.md', 'TOOLCHAIN.md is missing')
+
+if File.file?('.github/workflows/check.yml')
+  workflow = File.read('.github/workflows/check.yml')
+  unless workflow.lines.include?("permissions:\n") && workflow.lines.include?("  contents: read\n")
+    errors << 'hosted tutorial validation must use read-only repository contents permission'
+  end
+  unless workflow.include?('uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10')
+    errors << 'hosted tutorial validation must pin the reviewed actions/checkout v6 commit'
+  end
+  unless workflow.match?(/^\s+run: make check$/)
+    errors << 'hosted tutorial validation must run the canonical make check gate'
+  end
+end
 
 if File.file?('README.md')
   readme = File.read('README.md')
@@ -281,6 +299,13 @@ if File.file?('docs/plans/2026-06-10-tutorial-sequence-validation.md')
   plan = File.read('docs/plans/2026-06-10-tutorial-sequence-validation.md')
   unless plan.include?('Status: Completed') && plan.include?('make check')
     errors << 'canonical docs/plans tutorial sequence plan must be completed and record make check'
+  end
+end
+
+if File.file?('docs/plans/2026-06-10-hosted-tutorial-validation.md')
+  plan = File.read('docs/plans/2026-06-10-hosted-tutorial-validation.md')
+  unless plan.include?('Status: Completed') && plan.include?('make check')
+    errors << 'canonical docs/plans hosted tutorial validation plan must be completed and record make check'
   end
 end
 

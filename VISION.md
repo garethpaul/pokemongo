@@ -35,6 +35,9 @@ Priority:
   explicit
 - Maintain `make check`, `make verify`, and `make build` as the local tutorial
   asset inventory gates
+- Run the canonical Unity-free gate in hosted CI with read-only permissions and
+  pinned third-party actions
+- Anchor recursive asset scans to the repository regardless of caller location
 - Maintain the non-affiliation and fan-project disclaimer
 - Keep asset ownership and reuse assumptions explicit in `ASSET_NOTICES.md`
 - Document Unity, Blender, SDK, camera, and location assumptions for each tutorial
