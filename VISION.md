@@ -21,6 +21,7 @@ The current focus is:
 Priority:
 
 - Preserve the numbered tutorial structure
+- Keep numbered tutorial directories contiguous and listed in the top-level README
 - Keep screenshots and asset references available and referenced
 - Keep tutorial screenshots labelled with meaningful alt text
 - Keep screenshot image assets non-executable

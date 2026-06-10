@@ -71,6 +71,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   READMEs, the top-level toolchain matrix, exact Unity editor versions from
   `ProjectVersion.txt`, and asset-notice coverage without requiring Unity to be
   installed.
+- Numbered tutorial directories must stay contiguous from `001` and remain
+  listed in this top-level README.
 - Tutorial READMEs must name their critical setup files, SDKs, and permission
   assumptions so readers do not have to infer them from the top-level matrix.
 - Screenshot inventory files must stay non-executable so image assets do not
@@ -117,6 +119,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   project file permission validation and the static `make build` gate.
 - See `docs/plans/2026-06-09-tutorial-image-alt-validation.md` for tutorial
   screenshot alt-text validation.
+- See `docs/plans/2026-06-10-tutorial-sequence-validation.md` for numbered
+  tutorial sequence validation.
 - See `plans/2026-06-08-toolchain-matrix-validation.md` for the current
   toolchain matrix validation baseline.
 

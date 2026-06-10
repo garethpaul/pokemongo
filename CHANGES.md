@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-10
+
+- Added tutorial sequence validation so numbered tutorial directories must stay
+  contiguous from `001` and listed in the top-level README.
+
 ## 2026-06-09
 
 - Added tutorial screenshot alt-text validation for README image tags.

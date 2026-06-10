@@ -41,6 +41,8 @@ Unity project files, source files, material files, and `.meta` files should
 also stay non-executable because they are source or data inputs in this archive.
 Tutorial-local setup docs should keep camera and location assumptions visible
 near the steps that ask readers to open AR or map examples.
+Numbered tutorial directories should stay contiguous and listed in the top-level
+README so readers do not miss permission-sensitive AR or location examples.
 
 ## Dependency and Supply Chain Security
 

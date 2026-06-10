@@ -3,6 +3,8 @@
 
 errors = []
 tutorials = Dir.glob('[0-9][0-9][0-9]_*').select { |path| File.directory?(path) }.sort
+tutorial_ids = tutorials.map { |tutorial| tutorial[/\A\d{3}/] }
+expected_tutorial_ids = (1..tutorial_ids.length).map { |index| format('%03d', index) }
 unity_project_versions = {
   '001_collisions' => '001_collisions/ProjectSettings/ProjectVersion.txt',
   '003_augmented_reality' => '003_augmented_reality/AR Example Pokemon Go/ProjectSettings/ProjectVersion.txt'
@@ -13,6 +15,10 @@ tutorial_readme_requirements = {
   '003_augmented_reality' => ['Kudan', 'camera', 'PokemonScene.unity'],
   '004_slippy_maps' => ['PokemonMap.unitypackage', 'location']
 }.freeze
+
+unless tutorial_ids == expected_tutorial_ids
+  errors << "tutorial directories must be numbered contiguously from 001: #{tutorials.join(', ')}"
+end
 
 def require_file(errors, path, message)
   errors << message unless File.file?(path)
@@ -85,7 +91,15 @@ require_file(errors, 'docs/plans/2026-06-09-tutorial-readme-setup-validation.md'
 require_file(errors, 'docs/plans/2026-06-09-asset-permission-validation.md', 'canonical docs/plans asset permission plan is missing')
 require_file(errors, 'docs/plans/2026-06-09-unity-project-permission-validation.md', 'canonical docs/plans Unity project permission plan is missing')
 require_file(errors, 'docs/plans/2026-06-09-tutorial-image-alt-validation.md', 'canonical docs/plans tutorial image alt plan is missing')
+require_file(errors, 'docs/plans/2026-06-10-tutorial-sequence-validation.md', 'canonical docs/plans tutorial sequence plan is missing')
 require_file(errors, 'TOOLCHAIN.md', 'TOOLCHAIN.md is missing')
+
+if File.file?('README.md')
+  readme = File.read('README.md')
+  tutorials.each do |tutorial|
+    errors << "README.md missing tutorial directory #{tutorial}" unless readme.include?(tutorial)
+  end
+end
 
 {
   '001_collisions' => '001_collisions/Assets/Scenes/PokemonThrow.unity',
@@ -260,6 +274,13 @@ if File.file?('docs/plans/2026-06-09-tutorial-image-alt-validation.md')
   plan = File.read('docs/plans/2026-06-09-tutorial-image-alt-validation.md')
   unless plan.include?('Status: Completed') && plan.include?('make check')
     errors << 'canonical docs/plans tutorial image alt plan must be completed and record make check'
+  end
+end
+
+if File.file?('docs/plans/2026-06-10-tutorial-sequence-validation.md')
+  plan = File.read('docs/plans/2026-06-10-tutorial-sequence-validation.md')
+  unless plan.include?('Status: Completed') && plan.include?('make check')
+    errors << 'canonical docs/plans tutorial sequence plan must be completed and record make check'
   end
 end
 
