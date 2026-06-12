@@ -64,8 +64,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 ## Testing and Verification
 
 - Run `make check` or `make verify` before committing tutorial structure, screenshot, or asset-reference changes.
-- GitHub Actions runs the same dependency-free `make check` gate for pushes to
-  `master` and for pull requests.
+- GitHub Actions runs the same dependency-free `make check` gate for every push
+  and for pull requests.
 - Run `make build` for the static Unity-free tutorial validation gate; it uses
   the same dependency-free validator as `make lint`.
 - The verification gate checks README image references, the expected Unity,

@@ -106,6 +106,9 @@ if File.file?('.github/workflows/check.yml')
   unless workflow.lines.include?("permissions:\n") && workflow.lines.include?("  contents: read\n")
     errors << 'hosted tutorial validation must use read-only repository contents permission'
   end
+  unless workflow.lines.include?("  push:\n") && !workflow.include?('branches:')
+    errors << 'hosted tutorial validation must run for pushes on every branch'
+  end
   unless workflow.include?('uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10')
     errors << 'hosted tutorial validation must pin the reviewed actions/checkout v6 commit'
   end

@@ -6,6 +6,8 @@
   pinned checkout action.
 - Disabled hosted checkout credential persistence, added CODEOWNERS, and made
   the validator reject extra workflows or write permissions.
+- Extended hosted validation to every pushed branch so remediation commits are
+  checked before a pull request is opened.
 - Anchored recursive asset validation to the repository so invocation from
   another directory cannot scan unrelated files.
 - Added tutorial sequence validation so numbered tutorial directories must stay
