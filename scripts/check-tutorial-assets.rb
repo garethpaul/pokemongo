@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
-ROOT_DIR = File.expand_path('..', __dir__)
+ROOT_DIR = File.expand_path(ENV.fetch('TUTORIAL_ROOT', '..'), __dir__)
 Dir.chdir(ROOT_DIR)
 
 errors = []
@@ -25,6 +25,15 @@ end
 
 def require_file(errors, path, message)
   errors << message unless File.file?(path)
+end
+
+def require_signature(errors, path, signature, format)
+  return unless File.file?(path)
+
+  actual = File.binread(path, signature.bytesize)
+  errors << "#{path} must have a valid #{format} signature" unless actual == signature
+rescue EOFError
+  errors << "#{path} must have a valid #{format} signature"
 end
 
 tutorials.each do |tutorial|
@@ -97,9 +106,11 @@ require_file(errors, 'docs/plans/2026-06-09-tutorial-image-alt-validation.md', '
 require_file(errors, 'docs/plans/2026-06-10-tutorial-sequence-validation.md', 'canonical docs/plans tutorial sequence plan is missing')
 require_file(errors, 'docs/plans/2026-06-10-hosted-tutorial-validation.md', 'canonical docs/plans hosted tutorial validation plan is missing')
 require_file(errors, 'docs/plans/2026-06-10-unity-metadata-validation.md', 'canonical docs/plans Unity metadata validation plan is missing')
+require_file(errors, 'docs/plans/2026-06-12-asset-signature-validation.md', 'canonical docs/plans asset signature validation plan is missing')
 require_file(errors, '.github/CODEOWNERS', 'repository CODEOWNERS is missing')
 require_file(errors, '.github/workflows/check.yml', 'hosted tutorial validation workflow is missing')
 require_file(errors, 'TOOLCHAIN.md', 'TOOLCHAIN.md is missing')
+require_file(errors, 'scripts/test-tutorial-assets.sh', 'tutorial asset mutation test is missing')
 
 if File.file?('.github/workflows/check.yml')
   workflow = File.read('.github/workflows/check.yml')
@@ -136,6 +147,9 @@ if File.file?('README.md')
   tutorials.each do |tutorial|
     errors << "README.md missing tutorial directory #{tutorial}" unless readme.include?(tutorial)
   end
+  unless readme.include?('binary file signatures')
+    errors << 'README.md must document archived asset binary file signatures'
+  end
 end
 
 {
@@ -163,6 +177,13 @@ end
 
 screenshot_files = Dir.glob(File.join('screenshots', '**', '*')).select { |path| File.file?(path) }.sort
 screenshot_files.each do |screenshot|
+  case File.extname(screenshot).downcase
+  when '.png'
+    require_signature(errors, screenshot, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a].pack('C*'), 'PNG')
+  when '.jpg', '.jpeg'
+    require_signature(errors, screenshot, [0xff, 0xd8, 0xff].pack('C*'), 'JPEG')
+  end
+
   next if (File.stat(screenshot).mode & 0o111).zero?
 
   errors << "#{screenshot} must not be executable"
@@ -173,6 +194,18 @@ asset_files.each do |asset|
   next if (File.stat(asset).mode & 0o111).zero?
 
   errors << "#{asset} must not be executable"
+end
+
+Dir.glob('**/*.blend').select { |path| File.file?(path) }.sort.each do |blend|
+  require_signature(errors, blend, 'BLENDER'.b, 'Blender')
+end
+
+Dir.glob('**/*.unitypackage').select { |path| File.file?(path) }.sort.each do |unity_package|
+  require_signature(errors, unity_package, [0x1f, 0x8b].pack('C*'), 'gzip')
+end
+
+Dir.glob(['**/*.fbx', '**/*.FBX']).select { |path| File.file?(path) }.sort.each do |fbx|
+  require_signature(errors, fbx, "Kaydara FBX Binary  \x00\x1a\x00".b, 'binary FBX')
 end
 
 unity_project_files = Dir.glob([
@@ -357,6 +390,31 @@ if File.file?('docs/plans/2026-06-10-unity-metadata-validation.md')
   unless plan.include?('Status: Completed') && plan.include?('make check')
     errors << 'canonical docs/plans Unity metadata validation plan must be completed and record make check'
   end
+end
+
+if File.file?('docs/plans/2026-06-12-asset-signature-validation.md')
+  plan = File.read('docs/plans/2026-06-12-asset-signature-validation.md')
+  unless plan.match?(/^Status: Completed$/) && plan.include?('make check')
+    errors << 'canonical docs/plans asset signature plan must be completed and record make check'
+  end
+end
+
+if File.file?('scripts/test-tutorial-assets.sh')
+  mutation_test = File.read('scripts/test-tutorial-assets.sh')
+  [
+    'assert_rejected "PNG" "screenshots/001/001.png" "must have a valid PNG signature"',
+    'assert_rejected "JPEG" "screenshots/004/001.jpg" "must have a valid JPEG signature"',
+    'assert_rejected "Blender" "002_characters/Pikachu.blend" "must have a valid Blender signature"',
+    'assert_rejected "gzip" "004_slippy_maps/PokemonMap.unitypackage" "must have a valid gzip signature"',
+    'assert_rejected "binary-FBX" "001_collisions/Assets/Objects/Pikachu.FBX" "must have a valid binary FBX signature"'
+  ].each do |contract|
+    errors << "tutorial asset mutation test must preserve: #{contract}" unless mutation_test.include?(contract)
+  end
+  errors << 'tutorial asset mutation test must use an isolated root' unless mutation_test.include?('TUTORIAL_ROOT=')
+end
+
+if File.file?('Makefile') && !File.read('Makefile').include?('scripts/test-tutorial-assets.sh')
+  errors << 'Makefile test gate must run scripts/test-tutorial-assets.sh'
 end
 
 if errors.any?

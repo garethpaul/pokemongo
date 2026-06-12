@@ -47,6 +47,9 @@ Recursive asset validation is anchored to this repository so checks do not
 inspect unrelated caller-directory files. Hosted validation uses read-only
 repository access, a pinned checkout action without persisted credentials, and
 explicit CODEOWNERS review routing.
+The dependency-free gate checks recognizable signatures for archived images,
+Blender projects, binary FBX models, and gzip-compressed Unity packages so text
+placeholders or truncated replacements do not pass as tutorial assets.
 
 ## Dependency and Supply Chain Security
 
