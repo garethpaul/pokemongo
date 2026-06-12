@@ -20,6 +20,7 @@ This README is based on the checked-in source, manifests, scripts, and repositor
 - `CHANGES.md` - notable maintenance changes
 - `docs/plans` - completed engineering plans in the canonical location
 - `Makefile` - local verification entry points
+- `.github/workflows/check.yml` - hosted Unity-free tutorial validation
 - `TOOLCHAIN.md` - Unity, Blender, AR SDK, and map package assumptions
 - `plans` - completed maintenance plans
 - `scripts` - deterministic tutorial inventory checks
@@ -63,6 +64,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 ## Testing and Verification
 
 - Run `make check` or `make verify` before committing tutorial structure, screenshot, or asset-reference changes.
+- GitHub Actions runs the same dependency-free `make check` gate for pushes to
+  `master` and for pull requests.
 - Run `make build` for the static Unity-free tutorial validation gate; it uses
   the same dependency-free validator as `make lint`.
 - The verification gate checks README image references, the expected Unity,
@@ -81,6 +84,15 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   non-executable so tutorial media cannot carry script-like permissions.
 - Unity project files, source files, material files, and `.meta` files must
   also stay non-executable because they are data or source inputs here.
+- Every file and directory below a checked-in Unity `Assets` folder must keep
+  matching `.meta` metadata, and orphaned metadata is rejected, so Unity GUIDs
+  remain stable when the archive is cloned or imported. Metadata GUIDs must
+  also use Unity's lowercase 32-hex format and remain unique across projects.
+- The validator anchors recursive asset scans to the repository, so it can be
+  invoked from any working directory without inspecting unrelated files.
+- The same gate protects the hosted workflow's read-only permission, pinned
+  credential-free checkout, sole-workflow boundary, ownership routing, and
+  canonical command.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -121,6 +133,10 @@ When the required SDK or runtime is unavailable, use static checks and source re
   screenshot alt-text validation.
 - See `docs/plans/2026-06-10-tutorial-sequence-validation.md` for numbered
   tutorial sequence validation.
+- See `docs/plans/2026-06-10-hosted-tutorial-validation.md` for hosted checks
+  and repository-anchored asset scanning.
+- See `docs/plans/2026-06-10-unity-metadata-validation.md` for Unity asset and
+  `.meta` pairing validation.
 - See `plans/2026-06-08-toolchain-matrix-validation.md` for the current
   toolchain matrix validation baseline.
 

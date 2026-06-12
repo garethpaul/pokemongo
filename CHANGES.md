@@ -2,8 +2,16 @@
 
 ## 2026-06-10
 
+- Added hosted Unity-free tutorial validation with read-only permissions and a
+  pinned checkout action.
+- Disabled hosted checkout credential persistence, added CODEOWNERS, and made
+  the validator reject extra workflows or write permissions.
+- Anchored recursive asset validation to the repository so invocation from
+  another directory cannot scan unrelated files.
 - Added tutorial sequence validation so numbered tutorial directories must stay
   contiguous from `001` and listed in the top-level README.
+- Restored stable Unity metadata for the augmented-reality scene and added
+  asset-to-`.meta` pairing validation across checked-in Unity projects.
 
 ## 2026-06-09
 

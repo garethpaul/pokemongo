@@ -1,6 +1,9 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+ROOT_DIR = File.expand_path('..', __dir__)
+Dir.chdir(ROOT_DIR)
+
 errors = []
 tutorials = Dir.glob('[0-9][0-9][0-9]_*').select { |path| File.directory?(path) }.sort
 tutorial_ids = tutorials.map { |tutorial| tutorial[/\A\d{3}/] }
@@ -92,7 +95,38 @@ require_file(errors, 'docs/plans/2026-06-09-asset-permission-validation.md', 'ca
 require_file(errors, 'docs/plans/2026-06-09-unity-project-permission-validation.md', 'canonical docs/plans Unity project permission plan is missing')
 require_file(errors, 'docs/plans/2026-06-09-tutorial-image-alt-validation.md', 'canonical docs/plans tutorial image alt plan is missing')
 require_file(errors, 'docs/plans/2026-06-10-tutorial-sequence-validation.md', 'canonical docs/plans tutorial sequence plan is missing')
+require_file(errors, 'docs/plans/2026-06-10-hosted-tutorial-validation.md', 'canonical docs/plans hosted tutorial validation plan is missing')
+require_file(errors, 'docs/plans/2026-06-10-unity-metadata-validation.md', 'canonical docs/plans Unity metadata validation plan is missing')
+require_file(errors, '.github/CODEOWNERS', 'repository CODEOWNERS is missing')
+require_file(errors, '.github/workflows/check.yml', 'hosted tutorial validation workflow is missing')
 require_file(errors, 'TOOLCHAIN.md', 'TOOLCHAIN.md is missing')
+
+if File.file?('.github/workflows/check.yml')
+  workflow = File.read('.github/workflows/check.yml')
+  unless workflow.lines.include?("permissions:\n") && workflow.lines.include?("  contents: read\n")
+    errors << 'hosted tutorial validation must use read-only repository contents permission'
+  end
+  unless workflow.include?('uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10')
+    errors << 'hosted tutorial validation must pin the reviewed actions/checkout v6 commit'
+  end
+  unless workflow.include?('persist-credentials: false')
+    errors << 'hosted tutorial validation must disable checkout credential persistence'
+  end
+  errors << 'hosted tutorial validation must use exactly one checkout action' unless workflow.scan(/uses: actions\/checkout@/).length == 1
+  errors << 'hosted tutorial validation must set credential persistence exactly once' unless workflow.scan(/persist-credentials:/).length == 1
+  errors << 'hosted tutorial validation must keep one permissions block' unless workflow.scan(/^permissions:$/).length == 1
+  errors << 'hosted tutorial validation must not grant write permissions' if workflow.match?(/^\s+[\w-]+:\s+write\s*$/)
+  unless workflow.match?(/^\s+run: make check$/)
+    errors << 'hosted tutorial validation must run the canonical make check gate'
+  end
+end
+
+workflow_files = Dir.glob('.github/workflows/**/*').select { |path| File.file?(path) }.sort
+errors << "check.yml must be the repository's only hosted workflow" unless workflow_files == ['.github/workflows/check.yml']
+
+if File.file?('.github/CODEOWNERS') && File.read('.github/CODEOWNERS').strip != '* @garethpaul'
+  errors << 'CODEOWNERS must assign the repository to @garethpaul'
+end
 
 if File.file?('README.md')
   readme = File.read('README.md')
@@ -151,6 +185,30 @@ unity_project_files.each do |project_file|
   next if (File.stat(project_file).mode & 0o111).zero?
 
   errors << "#{project_file} must not be executable"
+end
+
+unity_asset_roots = Dir.glob('[0-9][0-9][0-9]_*/**/Assets').select { |path| File.directory?(path) }
+unity_metadata_guids = {}
+unity_asset_roots.each do |asset_root|
+  Dir.glob(File.join(asset_root, '**', '*'), File::FNM_DOTMATCH).sort.each do |asset|
+    next if ['.', '..'].include?(File.basename(asset)) || asset.end_with?('.meta')
+
+    errors << "#{asset} is missing Unity metadata #{asset}.meta" unless File.file?("#{asset}.meta")
+  end
+
+  Dir.glob(File.join(asset_root, '**', '*.meta')).sort.each do |metadata|
+    asset = metadata.delete_suffix('.meta')
+    errors << "#{metadata} is orphaned Unity metadata" unless File.exist?(asset)
+
+    guid = File.read(metadata)[/^guid:\s*([0-9a-f]{32})$/, 1]
+    if guid.nil?
+      errors << "#{metadata} must declare a 32-character lowercase hexadecimal Unity guid"
+    elsif unity_metadata_guids.key?(guid)
+      errors << "#{metadata} duplicates Unity guid #{guid} from #{unity_metadata_guids.fetch(guid)}"
+    else
+      unity_metadata_guids[guid] = metadata
+    end
+  end
 end
 
 tutorial_readme_requirements.each do |tutorial, required_terms|
@@ -281,6 +339,20 @@ if File.file?('docs/plans/2026-06-10-tutorial-sequence-validation.md')
   plan = File.read('docs/plans/2026-06-10-tutorial-sequence-validation.md')
   unless plan.include?('Status: Completed') && plan.include?('make check')
     errors << 'canonical docs/plans tutorial sequence plan must be completed and record make check'
+  end
+end
+
+if File.file?('docs/plans/2026-06-10-hosted-tutorial-validation.md')
+  plan = File.read('docs/plans/2026-06-10-hosted-tutorial-validation.md')
+  unless plan.include?('Status: Completed') && plan.include?('make check')
+    errors << 'canonical docs/plans hosted tutorial validation plan must be completed and record make check'
+  end
+end
+
+if File.file?('docs/plans/2026-06-10-unity-metadata-validation.md')
+  plan = File.read('docs/plans/2026-06-10-unity-metadata-validation.md')
+  unless plan.include?('Status: Completed') && plan.include?('make check')
+    errors << 'canonical docs/plans Unity metadata validation plan must be completed and record make check'
   end
 end
 
