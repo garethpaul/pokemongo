@@ -36,6 +36,33 @@ rescue EOFError
   errors << "#{path} must have a valid #{format} signature"
 end
 
+def validate_tga(errors, path)
+  return unless File.file?(path)
+
+  header = File.binread(path, 18)
+  unless header.bytesize == 18
+    errors << "#{path} must have a valid TGA header"
+    return
+  end
+
+  id_length, color_map_type, image_type, _color_map_origin,
+    color_map_length, _color_map_depth, _x_origin, _y_origin,
+    width, height, pixel_depth, _descriptor = header.unpack('C3v2Cv4C2')
+
+  valid_header = color_map_type.zero? && color_map_length.zero? &&
+                 image_type == 2 && width.positive? && height.positive? &&
+                 [24, 32].include?(pixel_depth)
+  unless valid_header
+    errors << "#{path} must have a valid uncompressed true-color TGA header"
+    return
+  end
+
+  expected_size = 18 + id_length + (width * height * (pixel_depth / 8))
+  if File.size(path) < expected_size
+    errors << "#{path} must contain complete TGA pixel data"
+  end
+end
+
 tutorials.each do |tutorial|
   readme = File.join(tutorial, 'README.md')
   require_file(errors, readme, "#{tutorial} is missing README.md")
@@ -107,6 +134,7 @@ require_file(errors, 'docs/plans/2026-06-10-tutorial-sequence-validation.md', 'c
 require_file(errors, 'docs/plans/2026-06-10-hosted-tutorial-validation.md', 'canonical docs/plans hosted tutorial validation plan is missing')
 require_file(errors, 'docs/plans/2026-06-10-unity-metadata-validation.md', 'canonical docs/plans Unity metadata validation plan is missing')
 require_file(errors, 'docs/plans/2026-06-12-asset-signature-validation.md', 'canonical docs/plans asset signature validation plan is missing')
+require_file(errors, 'docs/plans/2026-06-12-tga-integrity-validation.md', 'canonical docs/plans TGA integrity validation plan is missing')
 require_file(errors, '.github/CODEOWNERS', 'repository CODEOWNERS is missing')
 require_file(errors, '.github/workflows/check.yml', 'hosted tutorial validation workflow is missing')
 require_file(errors, 'TOOLCHAIN.md', 'TOOLCHAIN.md is missing')
@@ -206,6 +234,10 @@ end
 
 Dir.glob(['**/*.fbx', '**/*.FBX']).select { |path| File.file?(path) }.sort.each do |fbx|
   require_signature(errors, fbx, "Kaydara FBX Binary  \x00\x1a\x00".b, 'binary FBX')
+end
+
+Dir.glob(['**/*.tga', '**/*.TGA']).select { |path| File.file?(path) }.sort.each do |tga|
+  validate_tga(errors, tga)
 end
 
 unity_project_files = Dir.glob([
@@ -399,6 +431,13 @@ if File.file?('docs/plans/2026-06-12-asset-signature-validation.md')
   end
 end
 
+if File.file?('docs/plans/2026-06-12-tga-integrity-validation.md')
+  plan = File.read('docs/plans/2026-06-12-tga-integrity-validation.md')
+  unless plan.match?(/^Status: Completed$/) && plan.include?('make check')
+    errors << 'canonical docs/plans TGA integrity plan must be completed and record make check'
+  end
+end
+
 if File.file?('scripts/test-tutorial-assets.sh')
   mutation_test = File.read('scripts/test-tutorial-assets.sh')
   [
@@ -406,11 +445,35 @@ if File.file?('scripts/test-tutorial-assets.sh')
     'assert_rejected "JPEG" "screenshots/004/001.jpg" "must have a valid JPEG signature"',
     'assert_rejected "Blender" "002_characters/Pikachu.blend" "must have a valid Blender signature"',
     'assert_rejected "gzip" "004_slippy_maps/PokemonMap.unitypackage" "must have a valid gzip signature"',
-    'assert_rejected "binary-FBX" "001_collisions/Assets/Objects/Pikachu.FBX" "must have a valid binary FBX signature"'
+    'assert_rejected "binary-FBX" "001_collisions/Assets/Objects/Pikachu.FBX" "must have a valid binary FBX signature"',
+    'assert_rejected "TGA-header" "001_collisions/Assets/Objects/Pikachu.fbm/PikachuDh.tga" "must have a valid uncompressed true-color TGA header"',
+    'assert_short_tga_header "001_collisions/Assets/Objects/Pikachu.fbm/PikachuDh.tga"',
+    'assert_tga_header_byte_rejected "TGA-color-map" "001_collisions/Assets/Objects/Pikachu.fbm/PikachuDh.tga" 1 1',
+    'assert_tga_header_byte_rejected "TGA-image-type" "001_collisions/Assets/Objects/Pikachu.fbm/PikachuDh.tga" 2 10',
+    'assert_tga_header_byte_rejected "TGA-zero-width" "001_collisions/Assets/Objects/Pikachu.fbm/PikachuDh.tga" 13 0',
+    'assert_tga_header_byte_rejected "TGA-pixel-depth" "001_collisions/Assets/Objects/Pikachu.fbm/PikachuDh.tga" 16 16',
+    'assert_truncated_tga "001_collisions/Assets/Objects/Pikachu.fbm/PikachuEyeDh.tga"'
   ].each do |contract|
     errors << "tutorial asset mutation test must preserve: #{contract}" unless mutation_test.include?(contract)
   end
+  unless mutation_test.include?('Tutorial asset baseline must pass before corruption mutations run.')
+    errors << 'tutorial asset mutation test must fail when the unmodified baseline is invalid'
+  end
   errors << 'tutorial asset mutation test must use an isolated root' unless mutation_test.include?('TUTORIAL_ROOT=')
+end
+
+
+if File.file?('README.md')
+  readme = File.read('README.md')
+  unless readme.include?('TGA header') && readme.include?('pixel payload integrity')
+    errors << 'README.md must document TGA header and pixel payload integrity'
+  end
+end
+
+validator_source = File.read(__FILE__)
+unless validator_source.include?("header.unpack('C3v2Cv4C2')") &&
+       validator_source.include?('must contain complete TGA pixel data')
+  errors << 'tutorial validator must preserve structural TGA validation'
 end
 
 if File.file?('Makefile') && !File.read('Makefile').include?('scripts/test-tutorial-assets.sh')

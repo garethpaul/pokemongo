@@ -2,6 +2,8 @@
 
 ## 2026-06-12
 
+- Added dependency-free TGA header and pixel-payload integrity checks with
+  isolated malformed-header and truncated-payload mutations.
 - Added dependency-free signature checks and corruption mutations for PNG/JPEG
   screenshots, Blender projects, binary FBX models, and Unity packages.
 
