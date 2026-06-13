@@ -22,7 +22,7 @@ assert_rejected() {
       rm "$target"
       printf '%s\n' 'corrupt tutorial asset' > "$target"
       ;;
-    corrupt-png|truncate-png|append-png|truncate-jpeg)
+    corrupt-png|truncate-png|append-png|truncate-jpeg|blender-pointer|blender-endian|blender-version-shape|blender-version|truncate-blender)
       cp "$target" "$target.copy"
       mv "$target.copy" "$target"
       ruby - "$target" "$mutation" <<'RUBY'
@@ -49,6 +49,16 @@ when 'append-png'
   data << 'trailing bytes'
 when 'truncate-jpeg'
   data = data.byteslice(0, data.bytesize - 2)
+when 'blender-pointer'
+  data.setbyte(7, 'x'.ord)
+when 'blender-endian'
+  data.setbyte(8, 'x'.ord)
+when 'blender-version-shape'
+  data[9, 3] = '2x2'
+when 'blender-version'
+  data[9, 3] = '999'
+when 'truncate-blender'
+  data = data.byteslice(0, 11)
 end
 
 File.binwrite(path, data)
@@ -75,6 +85,11 @@ assert_rejected "PNG-IEND" "screenshots/001/002.png" "must end with exactly one 
 assert_rejected "PNG-trailing" "screenshots/002/001.png" "must end with exactly one PNG IEND chunk" "append-png"
 assert_rejected "JPEG-EOI" "screenshots/004/001.jpg" "must end with a JPEG end-of-image marker" "truncate-jpeg"
 assert_rejected "Blender" "002_characters/Pikachu.blend" "must have a valid Blender signature"
+assert_rejected "Blender-pointer" "002_characters/Pikachu.blend" "must have a valid Blender pointer-width marker" "blender-pointer"
+assert_rejected "Blender-endian" "002_characters/Pikachu.blend" "must have a valid Blender endianness marker" "blender-endian"
+assert_rejected "Blender-version-shape" "002_characters/Pikachu.blend" "must have a three-digit Blender version" "blender-version-shape"
+assert_rejected "Blender-version" "002_characters/Pikachu.blend" "must retain Blender version 272" "blender-version"
+assert_rejected "Blender-truncated" "002_characters/Pikachu.blend" "must have a complete 12-byte Blender header" "truncate-blender"
 assert_rejected "gzip" "004_slippy_maps/PokemonMap.unitypackage" "must have a valid gzip signature"
 assert_rejected "binary-FBX" "001_collisions/Assets/Objects/Pikachu.FBX" "must have a valid binary FBX signature"
 

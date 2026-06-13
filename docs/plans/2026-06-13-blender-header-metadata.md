@@ -1,6 +1,6 @@
 # Validate Blender Header Metadata
 
-Status: Planned
+Status: Completed
 
 ## Context
 
@@ -52,8 +52,28 @@ blocks or requiring Blender.
 
 ## Work Completed
 
-Pending implementation.
+- Added a bounded 12-byte Blender header parser for signature, pointer-width,
+  endianness, version shape, and expected per-file version checks.
+- Documented the checked-in Pikachu Blender 2.72 and Pokeball Blender 2.77
+  provenance in the toolchain matrix and maintenance guidance.
+- Added five isolated header mutations while preserving the original generic
+  Blender signature mutation and all screenshot, TGA, FBX, and Unity checks.
+- Protected the plan, parser behavior, test labels, README contract, and
+  toolchain version evidence in the dependency-free repository validator.
+- Left every archived binary asset unchanged.
 
 ## Verification Results
 
-Pending implementation and verification.
+- Ruby 2.7 and Ruby 3.3 `make check` passed in network-disabled containers
+  against a disposable same-filesystem repository copy for isolated hard-link
+  mutations; the real worktree remained untouched.
+- Ruby and shell syntax, the focused integrity suite, all Make gates, and an
+  external-working-directory completed-copy validation passed.
+- Ten hostile mutations rejected pointer-width, endianness, version shape,
+  expected version, truncation, test, toolchain, README, plan status, and
+  verification-evidence drift.
+- The stacked base and current archived-asset manifests both have aggregate
+  SHA-256 `2fd6995034fee46406dd115b464aaab981c472b3f421bdc24fb5a3af678251f7`.
+- `git diff --check` passed. Exact-base comparison confirmed all binaries,
+  workflow, Makefile, ignore rules, and asset notices were unchanged; the
+  secret, captured-prompt, generated-artifact, specification, archived-asset, and dependency scan passed.

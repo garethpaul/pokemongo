@@ -2,6 +2,8 @@
 
 ## 2026-06-13
 
+- Validated complete Blender headers, pointer-width and endianness markers, and
+  documented 2.72/2.77 format versions without decoding model data.
 - Added PNG chunk framing, CRC, and terminal `IEND` validation plus JPEG
   end-of-image checks for archived screenshots.
 - Added isolated screenshot truncation, payload-corruption, and trailing-byte

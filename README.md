@@ -83,6 +83,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   carry script-like permissions.
 - Archived Blender, Unity package, FBX, and texture assets must also stay
   non-executable so tutorial media cannot carry script-like permissions.
+- Blender header metadata checks preserve each project’s pointer-width,
+  endianness, three-digit format version, and documented 2.72/2.77 provenance.
 - Unity project files, source files, material files, and `.meta` files must
   also stay non-executable because they are data or source inputs here.
 - Every file and directory below a checked-in Unity `Assets` folder must keep

@@ -50,6 +50,8 @@ explicit CODEOWNERS review routing.
 The dependency-free gate checks recognizable signatures for archived images,
 Blender projects, binary FBX models, and gzip-compressed Unity packages so text
 placeholders or truncated replacements do not pass as tutorial assets.
+Complete Blender header metadata is validated before archived model sources are
+trusted, including pointer-width, endianness, and version markers.
 
 ## Dependency and Supply Chain Security
 

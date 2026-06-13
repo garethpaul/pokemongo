@@ -14,6 +14,10 @@ unity_project_versions = {
   '001_collisions' => '001_collisions/ProjectSettings/ProjectVersion.txt',
   '003_augmented_reality' => '003_augmented_reality/AR Example Pokemon Go/ProjectSettings/ProjectVersion.txt'
 }.freeze
+blender_project_versions = {
+  '002_characters/Pikachu.blend' => '272',
+  '002_characters/Pokeball.blend' => '277'
+}.freeze
 tutorial_readme_requirements = {
   '001_collisions' => ['Unity', 'PokemonThrow.unity'],
   '002_characters' => ['Blender', 'Pikachu.blend', 'Pokeball.blend'],
@@ -96,6 +100,28 @@ def validate_jpeg_container(errors, path)
   errors << "#{path} must end with a JPEG end-of-image marker" unless File.binread(path).end_with?("\xff\xd9".b)
 end
 
+def validate_blender_header(errors, path, expected_version)
+  return unless File.file?(path)
+
+  header = File.binread(path, 12)
+  if header.bytesize != 12
+    errors << "#{path} must have a complete 12-byte Blender header"
+    return
+  end
+
+  errors << "#{path} must have a valid Blender signature" unless header.byteslice(0, 7) == 'BLENDER'.b
+  errors << "#{path} must have a valid Blender pointer-width marker" unless ['_', '-'].include?(header.byteslice(7, 1))
+  errors << "#{path} must have a valid Blender endianness marker" unless ['v', 'V'].include?(header.byteslice(8, 1))
+
+  version = header.byteslice(9, 3)
+  unless version.match?(/\A\d{3}\z/)
+    errors << "#{path} must have a three-digit Blender version"
+    return
+  end
+
+  errors << "#{path} must retain Blender version #{expected_version}" unless version == expected_version
+end
+
 tutorials.each do |tutorial|
   readme = File.join(tutorial, 'README.md')
   require_file(errors, readme, "#{tutorial} is missing README.md")
@@ -168,6 +194,7 @@ require_file(errors, 'docs/plans/2026-06-10-hosted-tutorial-validation.md', 'can
 require_file(errors, 'docs/plans/2026-06-10-unity-metadata-validation.md', 'canonical docs/plans Unity metadata validation plan is missing')
 require_file(errors, 'docs/plans/2026-06-12-asset-signature-validation.md', 'canonical docs/plans asset signature validation plan is missing')
 require_file(errors, 'docs/plans/2026-06-13-screenshot-container-integrity.md', 'canonical docs/plans screenshot container integrity plan is missing')
+require_file(errors, 'docs/plans/2026-06-13-blender-header-metadata.md', 'canonical docs/plans Blender header metadata plan is missing')
 require_file(errors, '.github/CODEOWNERS', 'repository CODEOWNERS is missing')
 require_file(errors, '.github/workflows/check.yml', 'hosted tutorial validation workflow is missing')
 require_file(errors, 'TOOLCHAIN.md', 'TOOLCHAIN.md is missing')
@@ -214,6 +241,7 @@ if File.file?('README.md')
   unless readme.include?('PNG chunk CRCs') && readme.include?('terminal image markers')
     errors << 'README.md must document screenshot container integrity checks'
   end
+  errors << 'README.md must document Blender header metadata checks' unless readme.include?('Blender header metadata')
 end
 
 {
@@ -262,8 +290,8 @@ asset_files.each do |asset|
   errors << "#{asset} must not be executable"
 end
 
-Dir.glob('**/*.blend').select { |path| File.file?(path) }.sort.each do |blend|
-  require_signature(errors, blend, 'BLENDER'.b, 'Blender')
+blender_project_versions.each do |blend, expected_version|
+  validate_blender_header(errors, blend, expected_version)
 end
 
 Dir.glob('**/*.unitypackage').select { |path| File.file?(path) }.sort.each do |unity_package|
@@ -336,6 +364,13 @@ if File.file?('TOOLCHAIN.md')
     '004_slippy_maps' => 'PokemonMap.unitypackage'
   }.each do |tutorial, requirement|
     errors << "TOOLCHAIN.md missing #{requirement} for #{tutorial}" unless toolchain.include?(requirement)
+  end
+
+  blender_project_versions.each do |path, version|
+    documented_version = "Blender #{version[0]}.#{version[1..]}"
+    unless toolchain.include?(File.basename(path)) && toolchain.include?(documented_version)
+      errors << "TOOLCHAIN.md must document #{documented_version} for #{path}"
+    end
   end
 
   %w[Kudan camera location].each do |term|
@@ -465,6 +500,18 @@ if File.file?('docs/plans/2026-06-12-asset-signature-validation.md')
   end
 end
 
+if File.file?('docs/plans/2026-06-13-blender-header-metadata.md')
+  plan = File.read('docs/plans/2026-06-13-blender-header-metadata.md')
+  unless plan.match?(/^Status: Completed$/) &&
+         plan.include?('Ruby 2.7') &&
+         plan.include?('Ruby 3.3') &&
+         plan.include?('hostile mutations rejected') &&
+         plan.include?('git diff --check') &&
+         plan.include?('secret, captured-prompt, generated-artifact, specification, archived-asset, and dependency scan')
+    errors << 'canonical docs/plans Blender header metadata plan must preserve completed verification evidence'
+  end
+end
+
 if File.file?('docs/plans/2026-06-13-screenshot-container-integrity.md')
   plan = File.read('docs/plans/2026-06-13-screenshot-container-integrity.md')
   unless plan.match?(/^Status: Completed$/) && plan.include?('make check')
@@ -483,6 +530,11 @@ if File.file?('scripts/test-tutorial-assets.sh')
     'assert_rejected "PNG-trailing" "screenshots/002/001.png" "must end with exactly one PNG IEND chunk" "append-png"',
     'assert_rejected "JPEG-EOI" "screenshots/004/001.jpg" "must end with a JPEG end-of-image marker" "truncate-jpeg"',
     'assert_rejected "Blender" "002_characters/Pikachu.blend" "must have a valid Blender signature"',
+    'assert_rejected "Blender-pointer" "002_characters/Pikachu.blend" "must have a valid Blender pointer-width marker" "blender-pointer"',
+    'assert_rejected "Blender-endian" "002_characters/Pikachu.blend" "must have a valid Blender endianness marker" "blender-endian"',
+    'assert_rejected "Blender-version-shape" "002_characters/Pikachu.blend" "must have a three-digit Blender version" "blender-version-shape"',
+    'assert_rejected "Blender-version" "002_characters/Pikachu.blend" "must retain Blender version 272" "blender-version"',
+    'assert_rejected "Blender-truncated" "002_characters/Pikachu.blend" "must have a complete 12-byte Blender header" "truncate-blender"',
     'assert_rejected "gzip" "004_slippy_maps/PokemonMap.unitypackage" "must have a valid gzip signature"',
     'assert_rejected "binary-FBX" "001_collisions/Assets/Objects/Pikachu.FBX" "must have a valid binary FBX signature"'
   ].each do |contract|
