@@ -18,6 +18,10 @@ blender_project_versions = {
   '002_characters/Pikachu.blend' => '272',
   '002_characters/Pokeball.blend' => '277'
 }.freeze
+fbx_project_versions = {
+  '001_collisions/Assets/Objects/Pikachu.FBX' => 7300,
+  '001_collisions/Assets/Objects/pokeball2.fbx' => 7400
+}.freeze
 tutorial_readme_requirements = {
   '001_collisions' => ['Unity', 'PokemonThrow.unity'],
   '002_characters' => ['Blender', 'Pikachu.blend', 'Pokeball.blend'],
@@ -122,6 +126,37 @@ def validate_blender_header(errors, path, expected_version)
   errors << "#{path} must retain Blender version #{expected_version}" unless version == expected_version
 end
 
+def validate_binary_fbx(errors, path, expected_version)
+  return unless File.file?(path)
+
+  size = File.size(path)
+  header = File.binread(path, 27)
+  signature = "Kaydara FBX Binary  \x00\x1a\x00".b
+  unless header.start_with?(signature)
+    errors << "#{path} must have a valid binary FBX signature"
+    return
+  end
+
+  if size < 160
+    errors << "#{path} must have a complete binary FBX container"
+    return
+  end
+
+  header_version = header.byteslice(23, 4).unpack1('V')
+  errors << "#{path} must retain binary FBX version #{expected_version}" unless header_version == expected_version
+
+  footer = File.binread(path, 140, size - 140)
+  footer_version = footer.byteslice(0, 4).unpack1('V')
+  errors << "#{path} must have matching binary FBX header and footer versions" unless footer_version == header_version
+
+  footer_padding = footer.byteslice(4, 120)
+  errors << "#{path} must have zeroed binary FBX footer padding" unless footer_padding == "\x00".b * 120
+
+  footer_magic = [0xf8, 0x5a, 0x8c, 0x6a, 0xde, 0xf5, 0xd9, 0x7e,
+                  0xec, 0xe9, 0x0c, 0xe3, 0x75, 0x8f, 0x29, 0x0b].pack('C*')
+  errors << "#{path} must end with the binary FBX footer magic" unless footer.end_with?(footer_magic)
+end
+
 tutorials.each do |tutorial|
   readme = File.join(tutorial, 'README.md')
   require_file(errors, readme, "#{tutorial} is missing README.md")
@@ -195,6 +230,7 @@ require_file(errors, 'docs/plans/2026-06-10-unity-metadata-validation.md', 'cano
 require_file(errors, 'docs/plans/2026-06-12-asset-signature-validation.md', 'canonical docs/plans asset signature validation plan is missing')
 require_file(errors, 'docs/plans/2026-06-13-screenshot-container-integrity.md', 'canonical docs/plans screenshot container integrity plan is missing')
 require_file(errors, 'docs/plans/2026-06-13-blender-header-metadata.md', 'canonical docs/plans Blender header metadata plan is missing')
+require_file(errors, 'docs/plans/2026-06-13-fbx-container-integrity.md', 'canonical docs/plans FBX container integrity plan is missing')
 require_file(errors, '.github/CODEOWNERS', 'repository CODEOWNERS is missing')
 require_file(errors, '.github/workflows/check.yml', 'hosted tutorial validation workflow is missing')
 require_file(errors, 'TOOLCHAIN.md', 'TOOLCHAIN.md is missing')
@@ -242,6 +278,9 @@ if File.file?('README.md')
     errors << 'README.md must document screenshot container integrity checks'
   end
   errors << 'README.md must document Blender header metadata checks' unless readme.include?('Blender header metadata')
+  unless readme.include?('Binary FBX checks') && readme.include?('footer versions') && readme.include?('terminal footer magic')
+    errors << 'README.md must document binary FBX container integrity checks'
+  end
 end
 
 {
@@ -298,8 +337,8 @@ Dir.glob('**/*.unitypackage').select { |path| File.file?(path) }.sort.each do |u
   require_signature(errors, unity_package, [0x1f, 0x8b].pack('C*'), 'gzip')
 end
 
-Dir.glob(['**/*.fbx', '**/*.FBX']).select { |path| File.file?(path) }.sort.each do |fbx|
-  require_signature(errors, fbx, "Kaydara FBX Binary  \x00\x1a\x00".b, 'binary FBX')
+fbx_project_versions.each do |fbx, expected_version|
+  validate_binary_fbx(errors, fbx, expected_version)
 end
 
 unity_project_files = Dir.glob([
@@ -370,6 +409,12 @@ if File.file?('TOOLCHAIN.md')
     documented_version = "Blender #{version[0]}.#{version[1..]}"
     unless toolchain.include?(File.basename(path)) && toolchain.include?(documented_version)
       errors << "TOOLCHAIN.md must document #{documented_version} for #{path}"
+    end
+  end
+
+  fbx_project_versions.each do |path, version|
+    unless toolchain.include?(File.basename(path)) && toolchain.include?("binary FBX #{version}")
+      errors << "TOOLCHAIN.md must document binary FBX #{version} for #{path}"
     end
   end
 
@@ -519,6 +564,18 @@ if File.file?('docs/plans/2026-06-13-screenshot-container-integrity.md')
   end
 end
 
+if File.file?('docs/plans/2026-06-13-fbx-container-integrity.md')
+  plan = File.read('docs/plans/2026-06-13-fbx-container-integrity.md')
+  unless plan.match?(/^Status: Completed$/) &&
+         plan.include?('Ruby 2.7') &&
+         plan.include?('Ruby 3.3') &&
+         plan.include?('hostile mutations rejected') &&
+         plan.include?('git diff --check') &&
+         plan.include?('secret, captured-prompt, generated-artifact, specification, archived-asset, and dependency scan')
+    errors << 'canonical docs/plans FBX container integrity plan must preserve completed verification evidence'
+  end
+end
+
 if File.file?('scripts/test-tutorial-assets.sh')
   mutation_test = File.read('scripts/test-tutorial-assets.sh')
   errors << 'tutorial asset mutation test must validate the clean baseline first' unless mutation_test.include?('"$VALIDATOR" >/dev/null')
@@ -535,6 +592,12 @@ if File.file?('scripts/test-tutorial-assets.sh')
     'assert_rejected "Blender-version-shape" "002_characters/Pikachu.blend" "must have a three-digit Blender version" "blender-version-shape"',
     'assert_rejected "Blender-version" "002_characters/Pikachu.blend" "must retain Blender version 272" "blender-version"',
     'assert_rejected "Blender-truncated" "002_characters/Pikachu.blend" "must have a complete 12-byte Blender header" "truncate-blender"',
+    'assert_rejected "FBX-header-version" "001_collisions/Assets/Objects/Pikachu.FBX" "must retain binary FBX version 7300" "fbx-header-version"',
+    'assert_rejected "FBX-footer-version" "001_collisions/Assets/Objects/Pikachu.FBX" "must have matching binary FBX header and footer versions" "fbx-footer-version"',
+    'assert_rejected "FBX-footer-padding" "001_collisions/Assets/Objects/pokeball2.fbx" "must have zeroed binary FBX footer padding" "fbx-footer-padding"',
+    'assert_rejected "FBX-truncated" "001_collisions/Assets/Objects/Pikachu.FBX" "must have a complete binary FBX container" "truncate-fbx"',
+    'assert_rejected "FBX-footer-missing" "001_collisions/Assets/Objects/Pikachu.FBX" "must end with the binary FBX footer magic" "strip-fbx-footer"',
+    'assert_rejected "FBX-trailing" "001_collisions/Assets/Objects/pokeball2.fbx" "must end with the binary FBX footer magic" "append-fbx"',
     'assert_rejected "gzip" "004_slippy_maps/PokemonMap.unitypackage" "must have a valid gzip signature"',
     'assert_rejected "binary-FBX" "001_collisions/Assets/Objects/Pikachu.FBX" "must have a valid binary FBX signature"'
   ].each do |contract|

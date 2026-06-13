@@ -22,7 +22,7 @@ assert_rejected() {
       rm "$target"
       printf '%s\n' 'corrupt tutorial asset' > "$target"
       ;;
-    corrupt-png|truncate-png|append-png|truncate-jpeg|blender-pointer|blender-endian|blender-version-shape|blender-version|truncate-blender)
+    corrupt-png|truncate-png|append-png|truncate-jpeg|blender-pointer|blender-endian|blender-version-shape|blender-version|truncate-blender|fbx-header-version|fbx-footer-version|fbx-footer-padding|truncate-fbx|strip-fbx-footer|append-fbx)
       cp "$target" "$target.copy"
       mv "$target.copy" "$target"
       ruby - "$target" "$mutation" <<'RUBY'
@@ -59,6 +59,18 @@ when 'blender-version'
   data[9, 3] = '999'
 when 'truncate-blender'
   data = data.byteslice(0, 11)
+when 'fbx-header-version'
+  data[23, 4] = [9999].pack('V')
+when 'fbx-footer-version'
+  data[-140, 4] = [9999].pack('V')
+when 'fbx-footer-padding'
+  data.setbyte(data.bytesize - 136, 1)
+when 'truncate-fbx'
+  data = data.byteslice(0, 100)
+when 'strip-fbx-footer'
+  data = data.byteslice(0, data.bytesize - 16)
+when 'append-fbx'
+  data << 'trailing bytes'
 end
 
 File.binwrite(path, data)
@@ -90,6 +102,12 @@ assert_rejected "Blender-endian" "002_characters/Pikachu.blend" "must have a val
 assert_rejected "Blender-version-shape" "002_characters/Pikachu.blend" "must have a three-digit Blender version" "blender-version-shape"
 assert_rejected "Blender-version" "002_characters/Pikachu.blend" "must retain Blender version 272" "blender-version"
 assert_rejected "Blender-truncated" "002_characters/Pikachu.blend" "must have a complete 12-byte Blender header" "truncate-blender"
+assert_rejected "FBX-header-version" "001_collisions/Assets/Objects/Pikachu.FBX" "must retain binary FBX version 7300" "fbx-header-version"
+assert_rejected "FBX-footer-version" "001_collisions/Assets/Objects/Pikachu.FBX" "must have matching binary FBX header and footer versions" "fbx-footer-version"
+assert_rejected "FBX-footer-padding" "001_collisions/Assets/Objects/pokeball2.fbx" "must have zeroed binary FBX footer padding" "fbx-footer-padding"
+assert_rejected "FBX-truncated" "001_collisions/Assets/Objects/Pikachu.FBX" "must have a complete binary FBX container" "truncate-fbx"
+assert_rejected "FBX-footer-missing" "001_collisions/Assets/Objects/Pikachu.FBX" "must end with the binary FBX footer magic" "strip-fbx-footer"
+assert_rejected "FBX-trailing" "001_collisions/Assets/Objects/pokeball2.fbx" "must end with the binary FBX footer magic" "append-fbx"
 assert_rejected "gzip" "004_slippy_maps/PokemonMap.unitypackage" "must have a valid gzip signature"
 assert_rejected "binary-FBX" "001_collisions/Assets/Objects/Pikachu.FBX" "must have a valid binary FBX signature"
 

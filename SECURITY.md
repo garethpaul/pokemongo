@@ -52,6 +52,9 @@ Blender projects, binary FBX models, and gzip-compressed Unity packages so text
 placeholders or truncated replacements do not pass as tutorial assets.
 Complete Blender header metadata is validated before archived model sources are
 trusted, including pointer-width, endianness, and version markers.
+Binary FBX models must retain their recorded header version, matching footer
+version, zeroed footer padding, and terminal footer magic so prefixed or
+truncated replacements fail before import.
 
 ## Dependency and Supply Chain Security
 

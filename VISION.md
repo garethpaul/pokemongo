@@ -29,6 +29,7 @@ Priority:
 - Detect corrupted or mislabeled screenshots and archived binary tutorial assets
 - Validate complete PNG containers and terminal PNG/JPEG image markers
 - Preserve complete Blender header metadata and documented format versions
+- Preserve binary FBX header/footer agreement and documented format versions
 - Keep Unity project files, source files, material files, and `.meta` files
   non-executable
 - Keep loose standalone screenshots documented in top-level notices

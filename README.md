@@ -85,6 +85,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   non-executable so tutorial media cannot carry script-like permissions.
 - Blender header metadata checks preserve each project’s pointer-width,
   endianness, three-digit format version, and documented 2.72/2.77 provenance.
+- Binary FBX checks preserve the checked-in 7300/7400 header versions, matching
+  footer versions, zeroed footer padding, and terminal footer magic.
 - Unity project files, source files, material files, and `.meta` files must
   also stay non-executable because they are data or source inputs here.
 - Every file and directory below a checked-in Unity `Assets` folder must keep
@@ -144,6 +146,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   detection on screenshots, Blender projects, FBX models, and Unity packages.
 - See `docs/plans/2026-06-13-screenshot-container-integrity.md` for PNG chunk
   CRC and terminal PNG/JPEG marker validation.
+- See `docs/plans/2026-06-13-fbx-container-integrity.md` for binary FBX header,
+  version, footer-padding, and terminal-magic validation.
 - See `plans/2026-06-08-toolchain-matrix-validation.md` for the current
   toolchain matrix validation baseline.
 

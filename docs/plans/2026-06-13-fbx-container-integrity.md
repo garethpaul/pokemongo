@@ -1,6 +1,6 @@
 # Validate Binary FBX Container Integrity
 
-Status: Pending
+Status: Completed
 
 ## Context
 
@@ -52,8 +52,28 @@ without decoding scene nodes or requiring Autodesk tooling.
 
 ## Work Completed
 
-Pending implementation.
+- Added a bounded binary FBX parser for the fixed signature, little-endian
+  header version, matching footer version, zeroed footer padding, and terminal
+  footer magic.
+- Recorded the checked-in 7300/7400 versions in toolchain and maintenance
+  guidance and protected the parser, tests, plan, and evidence contracts in the
+  repository validator.
+- Added six hard-link-safe FBX mutations without modifying either archived
+  model.
 
 ## Verification Results
 
-Pending implementation and validation.
+- Ruby 2.7 and Ruby 3.3 `make check` passed; Ruby 3.3 ran in a read-only,
+  network-disabled container against a disposable writable repository copy.
+- Ruby and POSIX shell syntax, all Make gates, and validator execution from an
+  external working directory passed.
+- The 20-case asset integrity suite passed, including six isolated FBX version,
+  footer, padding, truncation, and trailing-byte mutations.
+- Ten additional hostile mutations rejected parser constants and checks, test
+  contracts, toolchain/README guidance, plan status, and verification-evidence
+  drift.
+- All 15 archived binary paths are byte-identical to stacked base
+  `1c59a74e6fef7f62c94dac22502028fcac88c165`, with aggregate SHA-256
+  `2fd6995034fee46406dd115b464aaab981c472b3f421bdc24fb5a3af678251f7`.
+- `git diff --check` passed; protected workflow, Makefile, ignore rules, and
+  notices were unchanged, and the secret, captured-prompt, generated-artifact, specification, archived-asset, and dependency scan passed.

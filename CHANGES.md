@@ -2,6 +2,9 @@
 
 ## 2026-06-13
 
+- Added binary FBX container checks for recorded versions, matching footer
+  versions, zeroed footer padding, terminal magic, truncation, and trailing
+  bytes without parsing scene content.
 - Validated complete Blender headers, pointer-width and endianness markers, and
   documented 2.72/2.77 format versions without decoding model data.
 - Added PNG chunk framing, CRC, and terminal `IEND` validation plus JPEG
