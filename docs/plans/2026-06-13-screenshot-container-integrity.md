@@ -1,6 +1,6 @@
 # Screenshot Container Integrity Validation
 
-Status: Planned
+Status: Completed
 
 ## Context
 
@@ -42,7 +42,7 @@ guard without adding an image-processing dependency.
 - Do not rewrite or recompress archived images.
 - Do not modify TGA validation covered by the separate texture-integrity work.
 
-## Planned Verification
+## Verification
 
 - `ruby -c scripts/check-tutorial-assets.rb`
 - `sh -n scripts/test-tutorial-assets.sh`
@@ -56,3 +56,30 @@ guard without adding an image-processing dependency.
 - validator execution from outside the repository working directory
 - archived screenshot aggregate SHA-256 comparison with the base commit
 - `git diff --check`
+
+## Work Completed
+
+- Added bounds-checked PNG chunk traversal with CRC validation, required
+  `IHDR` and `IDAT` structure, and an exact terminal `IEND` requirement.
+- Added JPEG end-of-image marker validation to reject retained-header
+  truncation.
+- Added isolated PNG payload-corruption, truncation, trailing-byte, and JPEG
+  truncation mutations that break hard links before modifying fixtures.
+- Made the mutation suite require a clean baseline before exercising corrupt
+  fixtures.
+- Protected the implementation, mutation labels, README contract, completed
+  plan, and plan inventory in the repository validator.
+- Left every archived screenshot unchanged.
+
+## Verification Results
+
+- `ruby -c scripts/check-tutorial-assets.rb` passed.
+- `sh -n scripts/test-tutorial-assets.sh` and
+  `dash -n scripts/test-tutorial-assets.sh` passed.
+- `scripts/test-tutorial-assets.sh` passed all nine integrity mutations.
+- `make lint`, `make test`, `make build`, `make verify`, and `make check`
+  passed.
+- Validator execution from `/` passed with an explicit `TUTORIAL_ROOT`.
+- The base and current screenshot Git-tree aggregate SHA-256 values both equal
+  `904d3ac703519f7811a4e7745209a5f43f9749675ce3737bf26f3796f7b37f96`.
+- `git diff --check` passed.

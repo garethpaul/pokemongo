@@ -72,8 +72,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   Blender, and Unity package artifacts, per-tutorial screenshot inventory, the
   tutorial screenshot `alt` text, the Unity scene names referenced by tutorial
   READMEs, the top-level toolchain matrix, exact Unity editor versions from
-  `ProjectVersion.txt`, archived asset binary file signatures, and asset-notice
-  coverage without requiring Unity to be installed.
+  `ProjectVersion.txt`, archived asset binary file signatures, PNG chunk CRCs
+  and terminal image markers, and asset-notice coverage without requiring
+  Unity to be installed.
 - Numbered tutorial directories must stay contiguous from `001` and remain
   listed in this top-level README.
 - Tutorial READMEs must name their critical setup files, SDKs, and permission
@@ -139,6 +140,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   `.meta` pairing validation.
 - See `docs/plans/2026-06-12-asset-signature-validation.md` for corruption
   detection on screenshots, Blender projects, FBX models, and Unity packages.
+- See `docs/plans/2026-06-13-screenshot-container-integrity.md` for PNG chunk
+  CRC and terminal PNG/JPEG marker validation.
 - See `plans/2026-06-08-toolchain-matrix-validation.md` for the current
   toolchain matrix validation baseline.
 

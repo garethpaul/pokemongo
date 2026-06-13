@@ -1,5 +1,12 @@
 # Changes
 
+## 2026-06-13
+
+- Added PNG chunk framing, CRC, and terminal `IEND` validation plus JPEG
+  end-of-image checks for archived screenshots.
+- Added isolated screenshot truncation, payload-corruption, and trailing-byte
+  mutations without modifying checked-in assets.
+
 ## 2026-06-12
 
 - Added dependency-free signature checks and corruption mutations for PNG/JPEG

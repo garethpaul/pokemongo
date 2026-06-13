@@ -1,6 +1,8 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 
+require 'zlib'
+
 ROOT_DIR = File.expand_path(ENV.fetch('TUTORIAL_ROOT', '..'), __dir__)
 Dir.chdir(ROOT_DIR)
 
@@ -34,6 +36,64 @@ def require_signature(errors, path, signature, format)
   errors << "#{path} must have a valid #{format} signature" unless actual == signature
 rescue EOFError
   errors << "#{path} must have a valid #{format} signature"
+end
+
+def validate_png_container(errors, path)
+  return unless File.file?(path)
+
+  data = File.binread(path)
+  offset = 8
+  first_chunk = true
+  seen_idat = false
+
+  loop do
+    if offset == data.bytesize
+      errors << "#{path} must end with exactly one PNG IEND chunk"
+      return
+    end
+
+    if offset + 12 > data.bytesize
+      errors << "#{path} must have valid PNG chunk framing"
+      return
+    end
+
+    length = data.byteslice(offset, 4).unpack1('N')
+    chunk_end = offset + 12 + length
+    if chunk_end > data.bytesize
+      errors << "#{path} must have valid PNG chunk framing"
+      return
+    end
+
+    type = data.byteslice(offset + 4, 4)
+    payload = data.byteslice(offset + 8, length)
+    expected_crc = data.byteslice(offset + 8 + length, 4).unpack1('N')
+    unless Zlib.crc32(type + payload) == expected_crc
+      errors << "#{path} must have valid PNG chunk CRCs"
+      return
+    end
+
+    if first_chunk && (type != 'IHDR' || length != 13)
+      errors << "#{path} must start with one valid PNG IHDR chunk"
+      return
+    end
+
+    seen_idat = true if type == 'IDAT'
+    if type == 'IEND'
+      unless length.zero? && seen_idat && chunk_end == data.bytesize
+        errors << "#{path} must end with exactly one PNG IEND chunk"
+      end
+      return
+    end
+
+    first_chunk = false
+    offset = chunk_end
+  end
+end
+
+def validate_jpeg_container(errors, path)
+  return unless File.file?(path)
+
+  errors << "#{path} must end with a JPEG end-of-image marker" unless File.binread(path).end_with?("\xff\xd9".b)
 end
 
 tutorials.each do |tutorial|
@@ -107,6 +167,7 @@ require_file(errors, 'docs/plans/2026-06-10-tutorial-sequence-validation.md', 'c
 require_file(errors, 'docs/plans/2026-06-10-hosted-tutorial-validation.md', 'canonical docs/plans hosted tutorial validation plan is missing')
 require_file(errors, 'docs/plans/2026-06-10-unity-metadata-validation.md', 'canonical docs/plans Unity metadata validation plan is missing')
 require_file(errors, 'docs/plans/2026-06-12-asset-signature-validation.md', 'canonical docs/plans asset signature validation plan is missing')
+require_file(errors, 'docs/plans/2026-06-13-screenshot-container-integrity.md', 'canonical docs/plans screenshot container integrity plan is missing')
 require_file(errors, '.github/CODEOWNERS', 'repository CODEOWNERS is missing')
 require_file(errors, '.github/workflows/check.yml', 'hosted tutorial validation workflow is missing')
 require_file(errors, 'TOOLCHAIN.md', 'TOOLCHAIN.md is missing')
@@ -150,6 +211,9 @@ if File.file?('README.md')
   unless readme.include?('binary file signatures')
     errors << 'README.md must document archived asset binary file signatures'
   end
+  unless readme.include?('PNG chunk CRCs') && readme.include?('terminal image markers')
+    errors << 'README.md must document screenshot container integrity checks'
+  end
 end
 
 {
@@ -180,8 +244,10 @@ screenshot_files.each do |screenshot|
   case File.extname(screenshot).downcase
   when '.png'
     require_signature(errors, screenshot, [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a].pack('C*'), 'PNG')
+    validate_png_container(errors, screenshot)
   when '.jpg', '.jpeg'
     require_signature(errors, screenshot, [0xff, 0xd8, 0xff].pack('C*'), 'JPEG')
+    validate_jpeg_container(errors, screenshot)
   end
 
   next if (File.stat(screenshot).mode & 0o111).zero?
@@ -399,11 +465,23 @@ if File.file?('docs/plans/2026-06-12-asset-signature-validation.md')
   end
 end
 
+if File.file?('docs/plans/2026-06-13-screenshot-container-integrity.md')
+  plan = File.read('docs/plans/2026-06-13-screenshot-container-integrity.md')
+  unless plan.match?(/^Status: Completed$/) && plan.include?('make check')
+    errors << 'canonical docs/plans screenshot container integrity plan must be completed and record make check'
+  end
+end
+
 if File.file?('scripts/test-tutorial-assets.sh')
   mutation_test = File.read('scripts/test-tutorial-assets.sh')
+  errors << 'tutorial asset mutation test must validate the clean baseline first' unless mutation_test.include?('"$VALIDATOR" >/dev/null')
   [
     'assert_rejected "PNG" "screenshots/001/001.png" "must have a valid PNG signature"',
     'assert_rejected "JPEG" "screenshots/004/001.jpg" "must have a valid JPEG signature"',
+    'assert_rejected "PNG-CRC" "screenshots/001/001.png" "must have valid PNG chunk CRCs" "corrupt-png"',
+    'assert_rejected "PNG-IEND" "screenshots/001/002.png" "must end with exactly one PNG IEND chunk" "truncate-png"',
+    'assert_rejected "PNG-trailing" "screenshots/002/001.png" "must end with exactly one PNG IEND chunk" "append-png"',
+    'assert_rejected "JPEG-EOI" "screenshots/004/001.jpg" "must end with a JPEG end-of-image marker" "truncate-jpeg"',
     'assert_rejected "Blender" "002_characters/Pikachu.blend" "must have a valid Blender signature"',
     'assert_rejected "gzip" "004_slippy_maps/PokemonMap.unitypackage" "must have a valid gzip signature"',
     'assert_rejected "binary-FBX" "001_collisions/Assets/Objects/Pikachu.FBX" "must have a valid binary FBX signature"'
