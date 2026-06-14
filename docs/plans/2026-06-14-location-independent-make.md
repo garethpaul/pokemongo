@@ -6,7 +6,7 @@ date: 2026-06-14
 
 # Location-Independent Make Gates
 
-Status: Planned
+Status: Completed
 
 ## Summary
 
@@ -75,3 +75,26 @@ completed evidence after final validation.
 
 Completion requires root and external gates on Ruby 2.7 and 3.3, three isolated
 hostile Make mutations, shell/Ruby syntax, and exact archived-asset preservation.
+
+## Work Completed
+
+- Added an override-protected repository root and used it for the Ruby validator
+  and shell mutation harness without changing the Make target graph.
+- Extended the validator to require the root declaration, both rooted recipes,
+  and this completed evidence record.
+- Preserved tutorial sources, screenshots, Unity and Blender projects, Unity
+  packages, FBX/TGA assets, workflow, dependencies, and historical plans.
+
+## Verification Completed
+
+- Ruby 2.7.0 passed all Make aliases from the repository root and through the
+  absolute Makefile path from /tmp with a hostile `REPO_ROOT=/tmp` override.
+- Ruby 3.3 passed external `make check` in a read-only, network-isolated
+  container against a disposable writable repository copy.
+- The checker rejected three isolated hostile mutations covering root
+  derivation and both rooted recipes.
+- All 15 archived binary paths matched stacked base `58f0362` at aggregate
+  SHA-256 `799608aea7ddd7b85422087290b3ba536db03002802c534e71ae5f950e528a60`.
+- Ruby and POSIX shell syntax, `git diff --check`, intended-path,
+  generated-artifact, credential-pattern, dependency, workflow, documentation,
+  prior-plan, and archived-asset preservation checks passed.

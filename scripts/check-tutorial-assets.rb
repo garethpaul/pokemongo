@@ -610,6 +610,35 @@ if File.file?('Makefile') && !File.read('Makefile').include?('scripts/test-tutor
   errors << 'Makefile test gate must run scripts/test-tutorial-assets.sh'
 end
 
+if File.file?('Makefile')
+  makefile = File.read('Makefile')
+  [
+    'override REPO_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))',
+    'cd "$(REPO_ROOT)" && scripts/check-tutorial-assets.rb',
+    'cd "$(REPO_ROOT)" && scripts/test-tutorial-assets.sh'
+  ].each do |contract|
+    errors << "Makefile must remain caller-directory independent: #{contract}" unless makefile.include?(contract)
+  end
+end
+
+if File.file?('docs/plans/2026-06-14-location-independent-make.md')
+  plan = File.read('docs/plans/2026-06-14-location-independent-make.md')
+  [
+    'Status: Completed',
+    'Ruby 2.7.0',
+    'Ruby 3.3',
+    'absolute Makefile path from /tmp',
+    'REPO_ROOT=/tmp',
+    'three isolated hostile mutations',
+    'git diff --check',
+    'credential-pattern'
+  ].each do |evidence|
+    errors << "location-independent Make plan must preserve evidence: #{evidence}" unless plan.include?(evidence)
+  end
+else
+  errors << 'docs/plans/2026-06-14-location-independent-make.md is missing'
+end
+
 if errors.any?
   warn errors.join("\n")
   exit 1

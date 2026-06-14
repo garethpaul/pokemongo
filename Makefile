@@ -1,12 +1,14 @@
 .PHONY: check lint test build verify
 
+override REPO_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+
 check: verify
 
 lint:
-	scripts/check-tutorial-assets.rb
+	cd "$(REPO_ROOT)" && scripts/check-tutorial-assets.rb
 
 test: lint
-	scripts/test-tutorial-assets.sh
+	cd "$(REPO_ROOT)" && scripts/test-tutorial-assets.sh
 
 build: lint
 
