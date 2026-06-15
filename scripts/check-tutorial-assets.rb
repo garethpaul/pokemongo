@@ -104,6 +104,19 @@ def validate_jpeg_container(errors, path)
   errors << "#{path} must end with a JPEG end-of-image marker" unless File.binread(path).end_with?("\xff\xd9".b)
 end
 
+def validate_gzip_container(errors, path)
+  return unless File.file?(path)
+
+  Zlib::GzipReader.open(path) do |gzip|
+    gzip.read(64 * 1024) until gzip.eof?
+    unless gzip.unused.nil? || gzip.unused.empty?
+      errors << "#{path} must not contain trailing bytes after the gzip stream"
+    end
+  end
+rescue Zlib::Error, EOFError, IOError
+  errors << "#{path} must have a valid gzip container"
+end
+
 def validate_blender_header(errors, path, expected_version)
   return unless File.file?(path)
 
@@ -231,6 +244,7 @@ require_file(errors, 'docs/plans/2026-06-12-asset-signature-validation.md', 'can
 require_file(errors, 'docs/plans/2026-06-13-screenshot-container-integrity.md', 'canonical docs/plans screenshot container integrity plan is missing')
 require_file(errors, 'docs/plans/2026-06-13-blender-header-metadata.md', 'canonical docs/plans Blender header metadata plan is missing')
 require_file(errors, 'docs/plans/2026-06-13-fbx-container-integrity.md', 'canonical docs/plans FBX container integrity plan is missing')
+require_file(errors, 'docs/plans/2026-06-15-unitypackage-gzip-integrity.md', 'canonical docs/plans Unity package gzip integrity plan is missing')
 require_file(errors, '.github/CODEOWNERS', 'repository CODEOWNERS is missing')
 require_file(errors, '.github/workflows/check.yml', 'hosted tutorial validation workflow is missing')
 require_file(errors, 'TOOLCHAIN.md', 'TOOLCHAIN.md is missing')
@@ -280,6 +294,11 @@ if File.file?('README.md')
   errors << 'README.md must document Blender header metadata checks' unless readme.include?('Blender header metadata')
   unless readme.include?('Binary FBX checks') && readme.include?('footer versions') && readme.include?('terminal footer magic')
     errors << 'README.md must document binary FBX container integrity checks'
+  end
+  unless readme.include?('complete Unity package gzip streams') &&
+         readme.include?('invalid CRC or size footers') &&
+         readme.include?('trailing bytes')
+    errors << 'README.md must document Unity package gzip integrity checks'
   end
 end
 
@@ -335,6 +354,7 @@ end
 
 Dir.glob('**/*.unitypackage').select { |path| File.file?(path) }.sort.each do |unity_package|
   require_signature(errors, unity_package, [0x1f, 0x8b].pack('C*'), 'gzip')
+  validate_gzip_container(errors, unity_package)
 end
 
 fbx_project_versions.each do |fbx, expected_version|
@@ -576,6 +596,42 @@ if File.file?('docs/plans/2026-06-13-fbx-container-integrity.md')
   end
 end
 
+if File.file?('docs/plans/2026-06-15-unitypackage-gzip-integrity.md')
+  plan = File.read('docs/plans/2026-06-15-unitypackage-gzip-integrity.md')
+  unless plan.match?(/^## Status\n\nCompleted$/) &&
+         plan.include?('## Verification Completed') &&
+         plan.include?('Ruby 2.7.0') && plan.include?('Ruby 3.3') &&
+         plan.include?('hostile mutations were rejected') &&
+         plan.include?('git diff --check') &&
+         plan.include?('credential-pattern') &&
+         plan.include?('PokemonMap.unitypackage` remained byte-identical')
+    errors << 'canonical Unity package gzip integrity plan must preserve completed verification evidence'
+  end
+  if plan.match?(/pending|in[[:space:]]+progress|remain(s|ed)?[[:space:]]+(unfinished|to[[:space:]]+be)/i)
+    errors << 'canonical Unity package gzip integrity plan must not retain provisional verification language'
+  end
+end
+
+validator_lines = File.readlines(__FILE__)
+gzip_method_start = validator_lines.index { |line| line == "def validate_gzip_container(errors, path)\n" }
+gzip_method_end = gzip_method_start && validator_lines[(gzip_method_start + 1)..].index { |line| line.start_with?('def ') }
+gzip_method_source = if gzip_method_start && gzip_method_end
+                       validator_lines[gzip_method_start...(gzip_method_start + 1 + gzip_method_end)].join
+                     end
+[
+  'Zlib::GzipReader.open(path)',
+  'gzip.read(64 * 1024) until gzip.eof?',
+  'gzip.unused.nil? || gzip.unused.empty?',
+  'must have a valid gzip container'
+].each do |contract|
+  unless gzip_method_source&.include?(contract)
+    errors << "Unity package gzip validator must preserve executable contract: #{contract}"
+  end
+end
+unless validator_lines.count { |line| line == "  validate_gzip_container(errors, unity_package)\n" } == 1
+  errors << 'Unity package gzip validator must execute exactly once per package'
+end
+
 if File.file?('scripts/test-tutorial-assets.sh')
   mutation_test = File.read('scripts/test-tutorial-assets.sh')
   errors << 'tutorial asset mutation test must validate the clean baseline first' unless mutation_test.include?('"$VALIDATOR" >/dev/null')
@@ -599,9 +655,23 @@ if File.file?('scripts/test-tutorial-assets.sh')
     'assert_rejected "FBX-footer-missing" "001_collisions/Assets/Objects/Pikachu.FBX" "must end with the binary FBX footer magic" "strip-fbx-footer"',
     'assert_rejected "FBX-trailing" "001_collisions/Assets/Objects/pokeball2.fbx" "must end with the binary FBX footer magic" "append-fbx"',
     'assert_rejected "gzip" "004_slippy_maps/PokemonMap.unitypackage" "must have a valid gzip signature"',
+    'assert_rejected "gzip-truncated" "004_slippy_maps/PokemonMap.unitypackage" "must have a valid gzip container" "truncate-gzip"',
+    'assert_rejected "gzip-CRC" "004_slippy_maps/PokemonMap.unitypackage" "must have a valid gzip container" "corrupt-gzip-crc"',
+    'assert_rejected "gzip-size" "004_slippy_maps/PokemonMap.unitypackage" "must have a valid gzip container" "corrupt-gzip-size"',
+    'assert_rejected "gzip-trailing" "004_slippy_maps/PokemonMap.unitypackage" "must not contain trailing bytes after the gzip stream" "append-gzip"',
     'assert_rejected "binary-FBX" "001_collisions/Assets/Objects/Pikachu.FBX" "must have a valid binary FBX signature"'
   ].each do |contract|
     errors << "tutorial asset mutation test must preserve: #{contract}" unless mutation_test.include?(contract)
+  end
+  [
+    'assert_rejected "gzip-truncated" "004_slippy_maps/PokemonMap.unitypackage" "must have a valid gzip container" "truncate-gzip"',
+    'assert_rejected "gzip-CRC" "004_slippy_maps/PokemonMap.unitypackage" "must have a valid gzip container" "corrupt-gzip-crc"',
+    'assert_rejected "gzip-size" "004_slippy_maps/PokemonMap.unitypackage" "must have a valid gzip container" "corrupt-gzip-size"',
+    'assert_rejected "gzip-trailing" "004_slippy_maps/PokemonMap.unitypackage" "must not contain trailing bytes after the gzip stream" "append-gzip"'
+  ].each do |scenario|
+    unless mutation_test.lines.count { |line| line.chomp == scenario } == 1
+      errors << "tutorial asset mutation test must execute exactly once: #{scenario}"
+    end
   end
   errors << 'tutorial asset mutation test must use an isolated root' unless mutation_test.include?('TUTORIAL_ROOT=')
 end

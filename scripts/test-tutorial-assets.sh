@@ -22,7 +22,7 @@ assert_rejected() {
       rm "$target"
       printf '%s\n' 'corrupt tutorial asset' > "$target"
       ;;
-    corrupt-png|truncate-png|append-png|truncate-jpeg|blender-pointer|blender-endian|blender-version-shape|blender-version|truncate-blender|fbx-header-version|fbx-footer-version|fbx-footer-padding|truncate-fbx|strip-fbx-footer|append-fbx)
+    corrupt-png|truncate-png|append-png|truncate-jpeg|blender-pointer|blender-endian|blender-version-shape|blender-version|truncate-blender|fbx-header-version|fbx-footer-version|fbx-footer-padding|truncate-fbx|strip-fbx-footer|append-fbx|truncate-gzip|corrupt-gzip-crc|corrupt-gzip-size|append-gzip)
       cp "$target" "$target.copy"
       mv "$target.copy" "$target"
       ruby - "$target" "$mutation" <<'RUBY'
@@ -71,6 +71,14 @@ when 'strip-fbx-footer'
   data = data.byteslice(0, data.bytesize - 16)
 when 'append-fbx'
   data << 'trailing bytes'
+when 'truncate-gzip'
+  data = data.byteslice(0, data.bytesize - 8)
+when 'corrupt-gzip-crc'
+  data.setbyte(data.bytesize - 8, data.getbyte(data.bytesize - 8) ^ 0x01)
+when 'corrupt-gzip-size'
+  data.setbyte(data.bytesize - 1, data.getbyte(data.bytesize - 1) ^ 0x01)
+when 'append-gzip'
+  data << 'trailing bytes'
 end
 
 File.binwrite(path, data)
@@ -109,6 +117,10 @@ assert_rejected "FBX-truncated" "001_collisions/Assets/Objects/Pikachu.FBX" "mus
 assert_rejected "FBX-footer-missing" "001_collisions/Assets/Objects/Pikachu.FBX" "must end with the binary FBX footer magic" "strip-fbx-footer"
 assert_rejected "FBX-trailing" "001_collisions/Assets/Objects/pokeball2.fbx" "must end with the binary FBX footer magic" "append-fbx"
 assert_rejected "gzip" "004_slippy_maps/PokemonMap.unitypackage" "must have a valid gzip signature"
+assert_rejected "gzip-truncated" "004_slippy_maps/PokemonMap.unitypackage" "must have a valid gzip container" "truncate-gzip"
+assert_rejected "gzip-CRC" "004_slippy_maps/PokemonMap.unitypackage" "must have a valid gzip container" "corrupt-gzip-crc"
+assert_rejected "gzip-size" "004_slippy_maps/PokemonMap.unitypackage" "must have a valid gzip container" "corrupt-gzip-size"
+assert_rejected "gzip-trailing" "004_slippy_maps/PokemonMap.unitypackage" "must not contain trailing bytes after the gzip stream" "append-gzip"
 assert_rejected "binary-FBX" "001_collisions/Assets/Objects/Pikachu.FBX" "must have a valid binary FBX signature"
 
 printf '%s\n' "Tutorial asset integrity mutation tests passed."

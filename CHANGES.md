@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-15
+
+- Added streaming gzip integrity validation for the archived Unity package,
+  including truncation, checksum, size-footer, and trailing-byte failures.
+
 ## 2026-06-13
 
 - Added binary FBX container checks for recorded versions, matching footer
