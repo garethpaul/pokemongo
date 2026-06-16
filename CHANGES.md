@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-16
+
+- Added streaming inner-tar integrity validation for the archived Unity
+  package, including header checksums, member framing, and termination.
+
 ## 2026-06-15
 
 - Added streaming gzip integrity validation for the archived Unity package,

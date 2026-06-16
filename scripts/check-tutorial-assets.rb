@@ -104,15 +104,84 @@ def validate_jpeg_container(errors, path)
   errors << "#{path} must end with a JPEG end-of-image marker" unless File.binread(path).end_with?("\xff\xd9".b)
 end
 
+class TarContainerError < StandardError; end
+
+def read_exact(io, length)
+  data = ''.b
+  while data.bytesize < length
+    chunk = io.read(length - data.bytesize)
+    break if chunk.nil? || chunk.empty?
+
+    data << chunk
+  end
+  data
+end
+
+def parse_tar_octal(field)
+  value = field.sub(/\0.*\z/m, '').strip
+  return unless value.match?(/\A[0-7]+\z/)
+
+  value.to_i(8)
+end
+
+def validate_tar_stream(gzip)
+  zero_headers = 0
+
+  loop do
+    header = read_exact(gzip, 512)
+    raise TarContainerError unless header.bytesize == 512
+
+    if header == "\0".b * 512
+      zero_headers += 1
+      next if zero_headers < 2
+
+      trailing_size = 0
+      until gzip.eof?
+        chunk = gzip.read(64 * 1024)
+        trailing_size += chunk.bytesize
+        raise TarContainerError unless chunk.each_byte.all?(&:zero?)
+      end
+      raise TarContainerError unless (trailing_size % 512).zero?
+
+      return
+    end
+    raise TarContainerError unless zero_headers.zero?
+
+    expected_checksum = parse_tar_octal(header.byteslice(148, 8))
+    size = parse_tar_octal(header.byteslice(124, 12))
+    raise TarContainerError unless expected_checksum && size
+
+    actual_checksum = header.bytes.each_with_index.sum do |byte, index|
+      index.between?(148, 155) ? 32 : byte
+    end
+    raise TarContainerError unless actual_checksum == expected_checksum
+
+    remaining_size = size
+    while remaining_size.positive?
+      chunk = read_exact(gzip, [remaining_size, 64 * 1024].min)
+      raise TarContainerError if chunk.empty?
+
+      remaining_size -= chunk.bytesize
+    end
+
+    padding_size = (512 - (size % 512)) % 512
+    padding = read_exact(gzip, padding_size)
+    raise TarContainerError unless padding.bytesize == padding_size
+    raise TarContainerError unless padding.each_byte.all?(&:zero?)
+  end
+end
+
 def validate_gzip_container(errors, path)
   return unless File.file?(path)
 
   Zlib::GzipReader.open(path) do |gzip|
-    gzip.read(64 * 1024) until gzip.eof?
+    validate_tar_stream(gzip)
     unless gzip.unused.nil? || gzip.unused.empty?
       errors << "#{path} must not contain trailing bytes after the gzip stream"
     end
   end
+rescue TarContainerError
+  errors << "#{path} must contain a valid tar archive"
 rescue Zlib::Error, EOFError, IOError
   errors << "#{path} must have a valid gzip container"
 end
@@ -245,6 +314,7 @@ require_file(errors, 'docs/plans/2026-06-13-screenshot-container-integrity.md', 
 require_file(errors, 'docs/plans/2026-06-13-blender-header-metadata.md', 'canonical docs/plans Blender header metadata plan is missing')
 require_file(errors, 'docs/plans/2026-06-13-fbx-container-integrity.md', 'canonical docs/plans FBX container integrity plan is missing')
 require_file(errors, 'docs/plans/2026-06-15-unitypackage-gzip-integrity.md', 'canonical docs/plans Unity package gzip integrity plan is missing')
+require_file(errors, 'docs/plans/2026-06-16-unitypackage-tar-integrity.md', 'canonical docs/plans Unity package tar integrity plan is missing')
 require_file(errors, '.github/CODEOWNERS', 'repository CODEOWNERS is missing')
 require_file(errors, '.github/workflows/check.yml', 'hosted tutorial validation workflow is missing')
 require_file(errors, 'TOOLCHAIN.md', 'TOOLCHAIN.md is missing')
@@ -299,6 +369,10 @@ if File.file?('README.md')
          readme.include?('invalid CRC or size footers') &&
          readme.include?('trailing bytes')
     errors << 'README.md must document Unity package gzip integrity checks'
+  end
+  unless readme.include?('decompressed tar') && readme.include?('header') &&
+         readme.include?('checksums') && readme.include?('end-of-archive marker')
+    errors << 'README.md must document Unity package tar integrity checks'
   end
 end
 
@@ -612,21 +686,51 @@ if File.file?('docs/plans/2026-06-15-unitypackage-gzip-integrity.md')
   end
 end
 
+if File.file?('docs/plans/2026-06-16-unitypackage-tar-integrity.md')
+  plan = File.read('docs/plans/2026-06-16-unitypackage-tar-integrity.md')
+  unless plan.include?('## Status Completed') &&
+         plan.include?('## Verification Completed') &&
+         plan.include?('Ruby 2.7.0') && plan.include?('Ruby 3.3') &&
+         plan.include?('isolated hostile mutations were rejected') &&
+         plan.include?('git diff --check') &&
+         plan.include?('credential-pattern') &&
+         plan.include?('PokemonMap.unitypackage` remained byte-identical')
+    errors << 'canonical Unity package tar integrity plan must preserve completed verification evidence'
+  end
+end
+
 validator_lines = File.readlines(__FILE__)
 gzip_method_start = validator_lines.index { |line| line == "def validate_gzip_container(errors, path)\n" }
 gzip_method_end = gzip_method_start && validator_lines[(gzip_method_start + 1)..].index { |line| line.start_with?('def ') }
 gzip_method_source = if gzip_method_start && gzip_method_end
                        validator_lines[gzip_method_start...(gzip_method_start + 1 + gzip_method_end)].join
                      end
+tar_method_start = validator_lines.index { |line| line == "def validate_tar_stream(gzip)\n" }
+tar_method_end = tar_method_start && validator_lines[(tar_method_start + 1)..].index { |line| line.start_with?('def ') }
+tar_method_source = if tar_method_start && tar_method_end
+                      validator_lines[tar_method_start...(tar_method_start + 1 + tar_method_end)].join
+                    end
 [
   'Zlib::GzipReader.open(path)',
-  'gzip.read(64 * 1024) until gzip.eof?',
+  'validate_tar_stream(gzip)',
   'gzip.unused.nil? || gzip.unused.empty?',
+  'must contain a valid tar archive',
   'must have a valid gzip container'
 ].each do |contract|
   unless gzip_method_source&.include?(contract)
     errors << "Unity package gzip validator must preserve executable contract: #{contract}"
   end
+end
+[
+  'header = read_exact(gzip, 512)',
+  'expected_checksum = parse_tar_octal(header.byteslice(148, 8))',
+  'size = parse_tar_octal(header.byteslice(124, 12))',
+  'index.between?(148, 155) ? 32 : byte',
+  'padding_size = (512 - (size % 512)) % 512',
+  'raise TarContainerError unless padding.each_byte.all?(&:zero?)',
+  'raise TarContainerError unless (trailing_size % 512).zero?'
+].each do |contract|
+  errors << "Unity package tar validator must preserve executable contract: #{contract}" unless tar_method_source&.include?(contract)
 end
 unless validator_lines.count { |line| line == "  validate_gzip_container(errors, unity_package)\n" } == 1
   errors << 'Unity package gzip validator must execute exactly once per package'
@@ -659,6 +763,11 @@ if File.file?('scripts/test-tutorial-assets.sh')
     'assert_rejected "gzip-CRC" "004_slippy_maps/PokemonMap.unitypackage" "must have a valid gzip container" "corrupt-gzip-crc"',
     'assert_rejected "gzip-size" "004_slippy_maps/PokemonMap.unitypackage" "must have a valid gzip container" "corrupt-gzip-size"',
     'assert_rejected "gzip-trailing" "004_slippy_maps/PokemonMap.unitypackage" "must not contain trailing bytes after the gzip stream" "append-gzip"',
+    'assert_rejected "tar-checksum" "004_slippy_maps/PokemonMap.unitypackage" "must contain a valid tar archive" "corrupt-tar-checksum"',
+    'assert_rejected "tar-size" "004_slippy_maps/PokemonMap.unitypackage" "must contain a valid tar archive" "malformed-tar-size"',
+    'assert_rejected "tar-payload" "004_slippy_maps/PokemonMap.unitypackage" "must contain a valid tar archive" "oversized-tar-member"',
+    'assert_rejected "tar-padding" "004_slippy_maps/PokemonMap.unitypackage" "must contain a valid tar archive" "corrupt-tar-padding"',
+    'assert_rejected "tar-terminator" "004_slippy_maps/PokemonMap.unitypackage" "must contain a valid tar archive" "missing-tar-terminator"',
     'assert_rejected "binary-FBX" "001_collisions/Assets/Objects/Pikachu.FBX" "must have a valid binary FBX signature"'
   ].each do |contract|
     errors << "tutorial asset mutation test must preserve: #{contract}" unless mutation_test.include?(contract)

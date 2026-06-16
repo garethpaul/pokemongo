@@ -1,6 +1,6 @@
 # Unity Package Tar Integrity
 
-## Status Planned
+## Status Completed
 
 ## Problem
 
@@ -18,7 +18,8 @@ accepted by the repository validator while `tar -tzf` rejects it.
 - R3. Preserve the existing gzip signature, corruption, and trailing-byte
   diagnostics.
 - R4. Add isolated mutations for bad tar checksum, malformed size, truncated
-  payload, and missing terminator while keeping the gzip stream valid.
+  payload, nonzero member padding, and missing terminator while keeping the
+  gzip stream valid.
 - R5. Protect implementation, executable fixtures, documentation, and truthful
   completed evidence through the canonical static gate.
 - R6. Keep the archived Unity package and all other tutorial assets unchanged.
@@ -47,15 +48,33 @@ accepted by the repository validator while `tar -tzf` rejects it.
 - **Contracts and evidence:** validator static checks, `README.md`, `CHANGES.md`,
   and this plan.
 
-## Verification Planned
+## Work Completed
 
-- Ruby and POSIX-shell syntax checks.
-- Focused tutorial asset mutation suite.
-- Repository-root and external-directory `make check`.
-- Isolated hostile mutations against tar parsing, checksum, size, terminator,
-  fixture execution, documentation, and completed status.
-- Exact diff, artifact, credential-pattern, binary, mode, archived-asset hash,
-  and whitespace audits.
+- Added a streaming tar reader for 512-byte headers and padded member payloads
+  inside the existing gzip validation pass.
+- Added octal size parsing, POSIX header checksum verification, two-zero-block
+  termination, and zero-only trailing archive padding checks.
+- Added valid-gzip fixtures for checksum corruption, malformed size, oversized
+  payload framing, nonzero member padding, and missing tar termination.
+- Protected the executable parser, fixtures, documentation, and completed plan
+  evidence through the canonical repository validator.
+
+## Verification Completed
+
+- Ruby 2.7.0 passed syntax checks, the focused tutorial asset mutation suite,
+  repository-root `make check`, and the external-directory `make check` through
+  the absolute Makefile path.
+- Ruby 3.3 remains hosted-only in this environment; exact-head pull-request
+  evidence is recorded separately in the repository tracker.
+- The clean archive passed streaming gzip and tar validation; five valid-gzip
+  but invalid-tar fixtures were rejected with the stable tar diagnostic.
+- Ten isolated hostile mutations were rejected across tar block reads, octal
+  parsing, checksum calculation, member padding, termination, fixture wiring,
+  documentation, and completed status.
+- Final `git diff --check`, artifact, credential-pattern, conflict-marker,
+  binary, large-file, mode, archived-asset hash, and whitespace audits passed.
+  `PokemonMap.unitypackage` remained byte-identical at SHA-256
+  `ad4c5a1ad2ceb1324a4264254773f0a458ae7204d4fd001b43b6996ad91ce1da`.
 
 ## Risks
 
