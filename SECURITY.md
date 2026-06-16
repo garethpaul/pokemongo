@@ -55,6 +55,10 @@ trusted, including pointer-width, endianness, and version markers.
 Binary FBX models must retain their recorded header version, matching footer
 version, zeroed footer padding, and terminal footer magic so prefixed or
 truncated replacements fail before import.
+The C# compiler gate builds the tracked collision script against narrow
+compile-only UnityEngine stubs so syntax and referenced symbol regressions fail
+in hosted CI. UnityScript remains manual, and passing this gate does not prove
+safe Unity import or runtime behavior.
 
 ## Dependency and Supply Chain Security
 

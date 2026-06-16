@@ -315,10 +315,14 @@ require_file(errors, 'docs/plans/2026-06-13-blender-header-metadata.md', 'canoni
 require_file(errors, 'docs/plans/2026-06-13-fbx-container-integrity.md', 'canonical docs/plans FBX container integrity plan is missing')
 require_file(errors, 'docs/plans/2026-06-15-unitypackage-gzip-integrity.md', 'canonical docs/plans Unity package gzip integrity plan is missing')
 require_file(errors, 'docs/plans/2026-06-16-unitypackage-tar-integrity.md', 'canonical docs/plans Unity package tar integrity plan is missing')
+require_file(errors, 'docs/plans/2026-06-16-csharp-compiler-gate.md', 'canonical docs/plans C# compiler gate plan is missing')
 require_file(errors, '.github/CODEOWNERS', 'repository CODEOWNERS is missing')
 require_file(errors, '.github/workflows/check.yml', 'hosted tutorial validation workflow is missing')
 require_file(errors, 'TOOLCHAIN.md', 'TOOLCHAIN.md is missing')
 require_file(errors, 'scripts/test-tutorial-assets.sh', 'tutorial asset mutation test is missing')
+require_file(errors, 'scripts/compile-hit-object.sh', 'C# compiler runner is missing')
+require_file(errors, 'tests/HitObjectCompile/HitObjectCompile.csproj', 'C# compiler project is missing')
+require_file(errors, 'tests/HitObjectCompile/UnityEngineCompileStubs.cs', 'Unity compile stubs are missing')
 
 if File.file?('.github/workflows/check.yml')
   workflow = File.read('.github/workflows/check.yml')
@@ -816,6 +820,101 @@ if File.file?('docs/plans/2026-06-14-location-independent-make.md')
   end
 else
   errors << 'docs/plans/2026-06-14-location-independent-make.md is missing'
+end
+
+compiler_project_path = 'tests/HitObjectCompile/HitObjectCompile.csproj'
+compiler_stubs_path = 'tests/HitObjectCompile/UnityEngineCompileStubs.cs'
+compiler_runner_path = 'scripts/compile-hit-object.sh'
+compiler_plan_path = 'docs/plans/2026-06-16-csharp-compiler-gate.md'
+
+if File.file?('.gitignore')
+  gitignore = File.read('.gitignore')
+  unless gitignore.lines.count { |line| line.chomp == '!/tests/HitObjectCompile/HitObjectCompile.csproj' } == 1
+    errors << 'gitignore must track only the maintained HitObject compiler project exception'
+  end
+end
+
+if File.file?(compiler_project_path)
+  compiler_project = File.read(compiler_project_path)
+  [
+    '<TargetFramework>net8.0</TargetFramework>',
+    '<EnableDefaultCompileItems>false</EnableDefaultCompileItems>',
+    '<TreatWarningsAsErrors>true</TreatWarningsAsErrors>',
+    '<Compile Include="../../001_collisions/Assets/Scripts/HitObject.cs" Link="HitObject.cs" />',
+    '<Compile Include="UnityEngineCompileStubs.cs" />'
+  ].each do |contract|
+    errors << "C# compiler project must preserve: #{contract}" unless compiler_project.include?(contract)
+  end
+  errors << 'C# compiler project must not add package dependencies' if compiler_project.include?('<PackageReference')
+end
+
+if File.file?(compiler_stubs_path)
+  compiler_stubs = File.read(compiler_stubs_path)
+  %w[Object GameObject Collision MonoBehaviour Debug].each do |symbol|
+    errors << "Unity compile stubs must preserve #{symbol}" unless compiler_stubs.match?(/\b(?:class|static class) #{symbol}\b/)
+  end
+  errors << 'Unity compile stubs must preserve Destroy(Object target)' unless compiler_stubs.include?('Destroy(Object target)')
+  errors << 'Unity compile stubs must preserve Debug.Log(object message)' unless compiler_stubs.include?('Log(object message)')
+end
+
+if File.file?(compiler_runner_path)
+  compiler_runner = File.read(compiler_runner_path)
+  [
+    '#!/bin/sh',
+    'set -eu',
+    'mktemp -d "${TMPDIR:-/tmp}/pokemongo-hit-object-compile.XXXXXX"',
+    'trap cleanup 0',
+    'tests/HitObjectCompile/HitObjectCompile.csproj',
+    '--property:BaseIntermediateOutputPath="$BUILD_DIR/obj/"',
+    '--property:BaseOutputPath="$BUILD_DIR/bin/"',
+    '--property:RestoreIgnoreFailedSources=true'
+  ].each do |contract|
+    errors << "C# compiler runner must preserve: #{contract}" unless compiler_runner.include?(contract)
+  end
+end
+
+if File.file?('Makefile')
+  makefile = File.read('Makefile')
+  [
+    'DOTNET ?= dotnet',
+    'check: compile verify',
+    'compile:',
+    'DOTNET="$(DOTNET)" "$(REPO_ROOT)/scripts/compile-hit-object.sh"',
+    'build: compile lint'
+  ].each do |contract|
+    errors << "Makefile must preserve the C# compiler gate: #{contract}" unless makefile.include?(contract)
+  end
+end
+
+if File.file?('.github/workflows/check.yml')
+  workflow = File.read('.github/workflows/check.yml')
+  setup_dotnet = 'actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2'
+  errors << 'hosted C# compilation must pin the reviewed actions/setup-dotnet v5 commit' unless workflow.include?(setup_dotnet)
+  errors << 'hosted C# compilation must use exactly one setup-dotnet action' unless workflow.scan(/uses: actions\/setup-dotnet@/).length == 1
+  errors << 'hosted C# compilation must select .NET 8' unless workflow.include?('dotnet-version: 8.0.x')
+  errors << 'hosted C# compilation must expose dotnet --version' unless workflow.match?(/^\s+run: dotnet --version$/)
+end
+
+%w[README.md SECURITY.md VISION.md CHANGES.md TOOLCHAIN.md].each do |path|
+  next unless File.file?(path)
+
+  guidance = File.read(path).downcase
+  unless guidance.include?('c# compiler gate') && guidance.include?('unityscript remains manual')
+    errors << "#{path} must document the C# compiler gate and manual UnityScript boundary"
+  end
+end
+
+if File.file?(compiler_plan_path)
+  compiler_plan = File.read(compiler_plan_path)
+  verification = compiler_plan.split('## Verification Completed', 2).last.to_s.downcase.split.join(' ')
+  unless compiler_plan.include?('status: completed') &&
+         compiler_plan.include?('## Verification Completed') &&
+         verification.include?('repository and external-directory make gates passed') &&
+         verification.include?('nine hostile mutations were rejected') &&
+         verification.include?('hosted pull-request compiler check') &&
+         !verification.match?(/\b(?:pending|todo|tbd|not run|not yet)\b/)
+    errors << 'C# compiler gate plan must retain completed verification evidence'
+  end
 end
 
 if errors.any?

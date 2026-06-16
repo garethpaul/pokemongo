@@ -4,6 +4,10 @@ This repository is a preservation-oriented tutorial archive. The checks below
 do not require Unity, Blender, AR SDKs, or map SDKs to be installed, but the
 projects themselves were authored against older tools.
 
+The C# compiler gate uses .NET 8 and compile-only UnityEngine stubs to build the
+tracked `001_collisions/Assets/Scripts/HitObject.cs`. UnityScript remains manual,
+and full project import still requires the historical Unity editor listed below.
+
 | Tutorial | Checked-in project evidence | Local tools needed | External SDK or package | Permission-sensitive behavior |
 | --- | --- | --- | --- | --- |
 | 001_collisions | `001_collisions/ProjectSettings/ProjectVersion.txt` records Unity 5.3.5f1, `Assets/Scenes/PokemonThrow.unity`, `Pikachu.FBX` records binary FBX 7300, and `pokeball2.fbx` records binary FBX 7400 | Unity 5.3.5f1-compatible editor | Checked-in Pikachu and Pokeball assets | None beyond local game input |

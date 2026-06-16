@@ -64,10 +64,13 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 ## Testing and Verification
 
 - Run `make check` or `make verify` before committing tutorial structure, screenshot, or asset-reference changes.
-- GitHub Actions runs the same dependency-free `make check` gate for every push
-  and for pull requests.
-- Run `make build` for the static Unity-free tutorial validation gate; it uses
-  the same dependency-free validator as `make lint`.
+- Run `make compile` for the C# compiler gate. It builds the actual archived
+  `HitObject.cs` with .NET 8 and minimal compile-only UnityEngine stubs.
+- GitHub Actions installs a pinned .NET SDK and runs the same `make check` gate
+  for every push and pull request.
+- Run `make build` for both the C# compiler gate and the Unity-free tutorial
+  validator. UnityScript remains manual, and this command does not import or
+  build either Unity project.
 - The verification gate checks README image references, the expected Unity,
   Blender, and Unity package artifacts, per-tutorial screenshot inventory, the
   tutorial screenshot `alt` text, the Unity scene names referenced by tutorial

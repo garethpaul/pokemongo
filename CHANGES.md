@@ -2,6 +2,8 @@
 
 ## 2026-06-16
 
+- Added a C# compiler gate that builds the tracked `HitObject.cs` with .NET 8
+  and narrow compile-only UnityEngine stubs; UnityScript remains manual.
 - Added streaming inner-tar integrity validation for the archived Unity
   package, including header checksums, member framing, and termination.
 

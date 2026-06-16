@@ -11,10 +11,10 @@ hands-on experiments.
 The goal is to preserve the tutorial value while keeping trademark, asset,
 toolchain, and SDK assumptions clear.
 
-Current baseline: `make check` verifies tutorial asset references, screenshot
-inventory, screenshot alt text, toolchain matrix coverage, exact Unity editor
-versions, asset-notice coverage, and canonical `docs/plans` records without
-requiring Unity, Blender, Xcode, or AR SDK installs.
+Current baseline: `make check` runs the C# compiler gate when .NET is available,
+then verifies tutorial assets, screenshots, exact Unity editor versions,
+asset-notice coverage, and canonical plans without requiring Unity, Blender,
+Xcode, or AR SDK installs. UnityScript remains manual.
 
 The current focus is:
 
@@ -37,6 +37,8 @@ Priority:
 - Keep `TOOLCHAIN.md` aligned with Unity `ProjectVersion.txt` editor versions
 - Keep tutorial-local setup, SDK, package, camera, and location assumptions
   explicit
+- Keep the C# compiler gate tied to the tracked collision source and narrow
+  compile-only UnityEngine stubs
 - Maintain `make check`, `make verify`, and `make build` as the local tutorial
   asset inventory gates
 - Run the canonical Unity-free gate in hosted CI with read-only permissions and
