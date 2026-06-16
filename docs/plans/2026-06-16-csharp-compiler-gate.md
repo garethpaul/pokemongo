@@ -34,5 +34,7 @@ and complete Unity projects compile on a current toolchain.
   completed plan evidence, plus the tracked compiler-project ignore exception.
 - Ruby and shell syntax, diff checks, executable modes, artifact scans, and
   changed-line credential-pattern scans passed.
-- The local host lacks `dotnet`; the hosted pull-request compiler check is the
-  pre-merge authority for actual .NET 8 compilation.
+- The local host lacks `dotnet`. On implementation head
+  `7cc145f4cd4dc5c4d8e9e1ad19b12f7ffb86703e`, hosted push run `27644043193`
+  and hosted pull-request compiler check run `27644050768` passed; both logs
+  recorded the C# build succeeding with zero errors before the asset suite.
