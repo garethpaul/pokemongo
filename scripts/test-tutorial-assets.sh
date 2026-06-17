@@ -22,7 +22,7 @@ assert_rejected() {
       rm "$target"
       printf '%s\n' 'corrupt tutorial asset' > "$target"
       ;;
-    corrupt-png|truncate-png|append-png|truncate-jpeg|blender-pointer|blender-endian|blender-version-shape|blender-version|truncate-blender|fbx-header-version|fbx-footer-version|fbx-footer-padding|truncate-fbx|strip-fbx-footer|append-fbx|truncate-gzip|corrupt-gzip-crc|corrupt-gzip-size|append-gzip|corrupt-tar-checksum|malformed-tar-size|oversized-tar-member|corrupt-tar-padding|missing-tar-terminator)
+    corrupt-png|truncate-png|append-png|truncate-jpeg|blender-pointer|blender-endian|blender-version-shape|blender-version|truncate-blender|fbx-header-version|fbx-footer-version|fbx-footer-padding|truncate-fbx|strip-fbx-footer|append-fbx|truncate-gzip|corrupt-gzip-crc|corrupt-gzip-size|append-gzip|corrupt-tar-checksum|malformed-tar-size|oversized-tar-member|corrupt-tar-padding|missing-tar-terminator|trigger-signature)
       cp "$target" "$target.copy"
       mv "$target.copy" "$target"
       ruby - "$target" "$mutation" <<'RUBY'
@@ -143,6 +143,8 @@ when 'missing-tar-terminator'
   last_nonzero -= 1 while last_nonzero >= 0 && payload.getbyte(last_nonzero).zero?
   payload = payload.byteslice(0, last_nonzero + 1)
   data = gzip_data(payload)
+when 'trigger-signature'
+  data.sub!(/OnTriggerEnter\s*\(\s*Collider\s+\w+\s*\)/, 'OnTriggerEnter()')
 end
 
 File.binwrite(path, data)
@@ -191,5 +193,6 @@ assert_rejected "tar-payload" "004_slippy_maps/PokemonMap.unitypackage" "must co
 assert_rejected "tar-padding" "004_slippy_maps/PokemonMap.unitypackage" "must contain a valid tar archive" "corrupt-tar-padding"
 assert_rejected "tar-terminator" "004_slippy_maps/PokemonMap.unitypackage" "must contain a valid tar archive" "missing-tar-terminator"
 assert_rejected "binary-FBX" "001_collisions/Assets/Objects/Pikachu.FBX" "must have a valid binary FBX signature"
+assert_rejected "trigger-signature" "001_collisions/Assets/Scripts/HitObject.cs" "must use the supported OnTriggerEnter(Collider other) callback signature" "trigger-signature"
 
 printf '%s\n' "Tutorial asset integrity mutation tests passed."

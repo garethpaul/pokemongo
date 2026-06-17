@@ -12,6 +12,10 @@ namespace UnityEngine
     {
     }
 
+    public class Collider
+    {
+    }
+
     public class MonoBehaviour : Object
     {
         protected static void Destroy(Object target)

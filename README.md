@@ -65,7 +65,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 
 - Run `make check` or `make verify` before committing tutorial structure, screenshot, or asset-reference changes.
 - Run `make compile` for the C# compiler gate. It builds the actual archived
-  `HitObject.cs` with .NET 8 and minimal compile-only UnityEngine stubs.
+  `HitObject.cs` with .NET 8 and minimal compile-only UnityEngine stubs. The
+  static asset gate also preserves Unity's `OnTriggerEnter(Collider other)`
+  trigger callback signature, which ordinary C# compilation alone cannot verify.
 - GitHub Actions installs a pinned .NET SDK and runs the same `make check` gate
   for every push and pull request.
 - Run `make build` for both the C# compiler gate and the Unity-free tutorial

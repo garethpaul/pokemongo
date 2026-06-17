@@ -39,6 +39,8 @@ Priority:
   explicit
 - Keep the C# compiler gate tied to the tracked collision source and narrow
   compile-only UnityEngine stubs
+- Preserve Unity message signatures that compilation alone cannot distinguish
+  from ordinary methods, including the Collider-parameter trigger callback
 - Maintain `make check`, `make verify`, and `make build` as the local tutorial
   asset inventory gates
 - Run the canonical Unity-free gate in hosted CI with read-only permissions and

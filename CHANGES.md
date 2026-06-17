@@ -1,5 +1,10 @@
 # Changes
 
+## 2026-06-17
+
+- Repaired the collision tutorial's Unity trigger callback signature and added
+  a static mutation contract that compilation alone could not provide.
+
 ## 2026-06-16
 
 - Added a C# compiler gate that builds the tracked `HitObject.cs` with .NET 8

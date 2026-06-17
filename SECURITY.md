@@ -59,6 +59,9 @@ The C# compiler gate builds the tracked collision script against narrow
 compile-only UnityEngine stubs so syntax and referenced symbol regressions fail
 in hosted CI. UnityScript remains manual, and passing this gate does not prove
 safe Unity import or runtime behavior.
+The static validator separately preserves the supported Collider-parameter
+trigger callback signature so a compiling but undispatchable method cannot
+silently replace it.
 
 ## Dependency and Supply Chain Security
 

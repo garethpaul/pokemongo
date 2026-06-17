@@ -1,6 +1,6 @@
 # Unity Trigger Callback Signature
 
-Status: in progress
+Status: completed
 
 ## Problem
 
@@ -57,3 +57,30 @@ with the exact verification and remaining Unity-runtime boundary.
 - Do not modernize unrelated archived tutorial code or UnityScript assets.
 - Do not claim scene-level physics behavior was exercised without Unity.
 - Do not merge or close stacked pull requests without explicit authorization.
+
+## Work Completed
+
+- Repaired `HitObject.OnTriggerEnter` to use Unity's documented `Collider other`
+  parameter while preserving its existing log-only behavior.
+- Added only the `UnityEngine.Collider` compile stub required by the tracked
+  source.
+- Added a static callback-signature contract and isolated zero-argument
+  mutation so ordinary C# compilation cannot mask message-signature drift.
+- Added maintainer guidance, changelog evidence, and completed-plan enforcement
+  without changing scenes, archives, or hosted workflow configuration.
+
+## Verification Completed
+
+- Ruby syntax plus `sh -n` and `dash -n` passed for the changed validator and
+  mutation suite.
+- Focused tutorial asset validation and both repository/external `make check`
+  gates passed in a hard-linked final-state projection.
+- Local `dotnet` was unavailable; the exact linked source will be compiled by
+  the canonical hosted push and pull-request jobs after push.
+- Full `make check` passed from both repository and external caller locations
+  against the exact worktree after the completed-plan contract was active.
+- Six hostile mutations were rejected across the source signature, Collider
+  stub, checker guard, executable fixture, completed status, and truthful
+  runtime evidence.
+- Unity editor runtime was not exercised; scene-level trigger dispatch remains
+  an explicit manual boundary.

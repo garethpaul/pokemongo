@@ -772,7 +772,8 @@ if File.file?('scripts/test-tutorial-assets.sh')
     'assert_rejected "tar-payload" "004_slippy_maps/PokemonMap.unitypackage" "must contain a valid tar archive" "oversized-tar-member"',
     'assert_rejected "tar-padding" "004_slippy_maps/PokemonMap.unitypackage" "must contain a valid tar archive" "corrupt-tar-padding"',
     'assert_rejected "tar-terminator" "004_slippy_maps/PokemonMap.unitypackage" "must contain a valid tar archive" "missing-tar-terminator"',
-    'assert_rejected "binary-FBX" "001_collisions/Assets/Objects/Pikachu.FBX" "must have a valid binary FBX signature"'
+    'assert_rejected "binary-FBX" "001_collisions/Assets/Objects/Pikachu.FBX" "must have a valid binary FBX signature"',
+    'assert_rejected "trigger-signature" "001_collisions/Assets/Scripts/HitObject.cs" "must use the supported OnTriggerEnter(Collider other) callback signature" "trigger-signature"'
   ].each do |contract|
     errors << "tutorial asset mutation test must preserve: #{contract}" unless mutation_test.include?(contract)
   end
@@ -826,6 +827,8 @@ compiler_project_path = 'tests/HitObjectCompile/HitObjectCompile.csproj'
 compiler_stubs_path = 'tests/HitObjectCompile/UnityEngineCompileStubs.cs'
 compiler_runner_path = 'scripts/compile-hit-object.sh'
 compiler_plan_path = 'docs/plans/2026-06-16-csharp-compiler-gate.md'
+trigger_plan_path = 'docs/plans/2026-06-17-trigger-callback-signature.md'
+hit_object_path = '001_collisions/Assets/Scripts/HitObject.cs'
 
 if File.file?('.gitignore')
   gitignore = File.read('.gitignore')
@@ -850,11 +853,18 @@ end
 
 if File.file?(compiler_stubs_path)
   compiler_stubs = File.read(compiler_stubs_path)
-  %w[Object GameObject Collision MonoBehaviour Debug].each do |symbol|
+  %w[Object GameObject Collision Collider MonoBehaviour Debug].each do |symbol|
     errors << "Unity compile stubs must preserve #{symbol}" unless compiler_stubs.match?(/\b(?:class|static class) #{symbol}\b/)
   end
   errors << 'Unity compile stubs must preserve Destroy(Object target)' unless compiler_stubs.include?('Destroy(Object target)')
   errors << 'Unity compile stubs must preserve Debug.Log(object message)' unless compiler_stubs.include?('Log(object message)')
+end
+
+if File.file?(hit_object_path)
+  hit_object = File.read(hit_object_path)
+  unless hit_object.match?(/void\s+OnTriggerEnter\s*\(\s*Collider\s+\w+\s*\)/)
+    errors << 'HitObject.cs must use the supported OnTriggerEnter(Collider other) callback signature'
+  end
 end
 
 if File.file?(compiler_runner_path)
@@ -915,6 +925,21 @@ if File.file?(compiler_plan_path)
          !verification.match?(/\b(?:pending|todo|tbd|not run|not yet)\b/)
     errors << 'C# compiler gate plan must retain completed verification evidence'
   end
+end
+
+if File.file?(trigger_plan_path)
+  trigger_plan = File.read(trigger_plan_path)
+  verification = trigger_plan.split('## Verification Completed', 2).last.to_s.downcase.split.join(' ')
+  unless trigger_plan.include?('Status: completed') &&
+         trigger_plan.include?('## Verification Completed') &&
+         verification.include?('make check') &&
+         verification.include?('hostile mutations') &&
+         verification.include?('unity editor runtime was not exercised') &&
+         !verification.match?(/\b(?:pending|todo|tbd|not run|not yet)\b/)
+    errors << 'trigger callback signature plan must retain completed verification evidence'
+  end
+else
+  errors << "#{trigger_plan_path} is missing"
 end
 
 if errors.any?

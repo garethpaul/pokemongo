@@ -7,6 +7,9 @@ projects themselves were authored against older tools.
 The C# compiler gate uses .NET 8 and compile-only UnityEngine stubs to build the
 tracked `001_collisions/Assets/Scripts/HitObject.cs`. UnityScript remains manual,
 and full project import still requires the historical Unity editor listed below.
+The static asset gate also requires Unity's documented
+`OnTriggerEnter(Collider other)` callback signature; this is a source contract,
+not a substitute for scene-level trigger testing in the editor.
 
 | Tutorial | Checked-in project evidence | Local tools needed | External SDK or package | Permission-sensitive behavior |
 | --- | --- | --- | --- | --- |
