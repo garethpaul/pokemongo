@@ -6,6 +6,7 @@ lint:
 	scripts/check-tutorial-assets.rb
 
 test: lint
+	scripts/test-tutorial-assets.sh
 
 build: lint
 

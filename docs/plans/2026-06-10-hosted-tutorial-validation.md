@@ -13,10 +13,13 @@ assets as missing, and pushes or pull requests did not run the canonical gate.
 
 - Anchored `scripts/check-tutorial-assets.rb` to its repository before it reads
   files or expands recursive asset globs.
-- Added fixed-runner GitHub Actions validation for pushes to `master` and pull
-  requests without installing Unity, Blender, Xcode, or third-party packages.
+- Added fixed-runner GitHub Actions validation for pushes on every branch and
+  pull requests without installing Unity, Blender, Xcode, or third-party
+  packages.
 - Limited the workflow token to read-only contents access and pinned the
   checkout action to a reviewed commit.
+- Disabled checkout credential persistence, added CODEOWNERS review routing,
+  and enforced the sole hosted workflow contract.
 - Extended the validator to preserve the hosted workflow contract and this
   completed maintenance plan.
 
@@ -28,4 +31,5 @@ assets as missing, and pushes or pull requests did not run the canonical gate.
 - `make test`
 - `make build`
 - `make check`
+- five hostile workflow and ownership mutations
 - `git diff --check`

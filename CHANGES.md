@@ -1,9 +1,18 @@
 # Changes
 
+## 2026-06-12
+
+- Added dependency-free signature checks and corruption mutations for PNG/JPEG
+  screenshots, Blender projects, binary FBX models, and Unity packages.
+
 ## 2026-06-10
 
 - Added hosted Unity-free tutorial validation with read-only permissions and a
   pinned checkout action.
+- Disabled hosted checkout credential persistence, added CODEOWNERS, and made
+  the validator reject extra workflows or write permissions.
+- Extended hosted validation to every pushed branch so remediation commits are
+  checked before a pull request is opened.
 - Anchored recursive asset validation to the repository so invocation from
   another directory cannot scan unrelated files.
 - Added tutorial sequence validation so numbered tutorial directories must stay

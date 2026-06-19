@@ -64,16 +64,16 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 ## Testing and Verification
 
 - Run `make check` or `make verify` before committing tutorial structure, screenshot, or asset-reference changes.
-- GitHub Actions runs the same dependency-free `make check` gate for pushes to
-  `master` and for pull requests.
+- GitHub Actions runs the same dependency-free `make check` gate for every push
+  and for pull requests.
 - Run `make build` for the static Unity-free tutorial validation gate; it uses
   the same dependency-free validator as `make lint`.
 - The verification gate checks README image references, the expected Unity,
   Blender, and Unity package artifacts, per-tutorial screenshot inventory, the
   tutorial screenshot `alt` text, the Unity scene names referenced by tutorial
   READMEs, the top-level toolchain matrix, exact Unity editor versions from
-  `ProjectVersion.txt`, and asset-notice coverage without requiring Unity to be
-  installed.
+  `ProjectVersion.txt`, archived asset binary file signatures, and asset-notice
+  coverage without requiring Unity to be installed.
 - Numbered tutorial directories must stay contiguous from `001` and remain
   listed in this top-level README.
 - Tutorial READMEs must name their critical setup files, SDKs, and permission
@@ -91,7 +91,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 - The validator anchors recursive asset scans to the repository, so it can be
   invoked from any working directory without inspecting unrelated files.
 - The same gate protects the hosted workflow's read-only permission, pinned
-  checkout action, and canonical command.
+  credential-free checkout, sole-workflow boundary, ownership routing, and
+  canonical command.
 
 When the required SDK or runtime is unavailable, use static checks and source review first, then verify on a machine that has the matching platform toolchain.
 
@@ -136,6 +137,8 @@ When the required SDK or runtime is unavailable, use static checks and source re
   and repository-anchored asset scanning.
 - See `docs/plans/2026-06-10-unity-metadata-validation.md` for Unity asset and
   `.meta` pairing validation.
+- See `docs/plans/2026-06-12-asset-signature-validation.md` for corruption
+  detection on screenshots, Blender projects, FBX models, and Unity packages.
 - See `plans/2026-06-08-toolchain-matrix-validation.md` for the current
   toolchain matrix validation baseline.
 
