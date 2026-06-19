@@ -64,17 +64,23 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
 ## Testing and Verification
 
 - Run `make check` or `make verify` before committing tutorial structure, screenshot, or asset-reference changes.
-- GitHub Actions runs the same dependency-free `make check` gate for every push
-  and for pull requests.
-- Run `make build` for the static Unity-free tutorial validation gate; it uses
-  the same dependency-free validator as `make lint`.
+- Run `make compile` for the C# compiler gate. It builds the actual archived
+  `HitObject.cs` with .NET 8 and minimal compile-only UnityEngine stubs. The
+  static asset gate also preserves Unity's `OnTriggerEnter(Collider other)`
+  trigger callback signature, which ordinary C# compilation alone cannot verify.
+- GitHub Actions installs a pinned .NET SDK and runs the same `make check` gate
+  for every push and pull request.
+- Run `make build` for both the C# compiler gate and the Unity-free tutorial
+  validator. UnityScript remains manual, and this command does not import or
+  build either Unity project.
 - The verification gate checks README image references, the expected Unity,
   Blender, and Unity package artifacts, per-tutorial screenshot inventory, the
   tutorial screenshot `alt` text, the Unity scene names referenced by tutorial
   READMEs, the top-level toolchain matrix, exact Unity editor versions from
   `ProjectVersion.txt`, archived asset binary file signatures, TGA header and
-  pixel payload integrity, and asset-notice coverage without requiring Unity to
-  be installed.
+  pixel payload integrity, PNG chunk CRCs and terminal image markers,
+  complete Unity package gzip streams, and asset-notice coverage without
+  requiring Unity to be installed.
 - Numbered tutorial directories must stay contiguous from `001` and remain
   listed in this top-level README.
 - Tutorial READMEs must name their critical setup files, SDKs, and permission
@@ -83,6 +89,17 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   carry script-like permissions.
 - Archived Blender, Unity package, FBX, and texture assets must also stay
   non-executable so tutorial media cannot carry script-like permissions.
+- Blender header metadata checks preserve each project’s pointer-width,
+  endianness, three-digit format version, and documented 2.72/2.77 provenance.
+- TGA texture checks preserve uncompressed true-color headers and complete pixel
+  payloads before archived texture files are trusted.
+- Binary FBX checks preserve the checked-in 7300/7400 header versions, matching
+  footer versions, zeroed footer padding, and terminal footer magic.
+- Unity package checks stream the complete gzip container and reject truncated
+  data, invalid CRC or size footers, and trailing bytes. The decompressed tar
+  stream must also retain valid headers, checksums, sizes, member padding, safe
+  relative member paths, regular file or directory entries only, and its
+  end-of-archive marker.
 - Unity project files, source files, material files, and `.meta` files must
   also stay non-executable because they are data or source inputs here.
 - Every file and directory below a checked-in Unity `Assets` folder must keep
@@ -140,8 +157,10 @@ When the required SDK or runtime is unavailable, use static checks and source re
   `.meta` pairing validation.
 - See `docs/plans/2026-06-12-asset-signature-validation.md` for corruption
   detection on screenshots, Blender projects, FBX models, and Unity packages.
-- See `docs/plans/2026-06-12-tga-integrity-validation.md` for structural TGA
-  header and declared pixel-payload validation.
+- See `docs/plans/2026-06-13-screenshot-container-integrity.md` for PNG chunk
+  CRC and terminal PNG/JPEG marker validation.
+- See `docs/plans/2026-06-13-fbx-container-integrity.md` for binary FBX header,
+  version, footer-padding, and terminal-magic validation.
 - See `plans/2026-06-08-toolchain-matrix-validation.md` for the current
   toolchain matrix validation baseline.
 

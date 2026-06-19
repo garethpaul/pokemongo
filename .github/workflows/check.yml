@@ -24,5 +24,11 @@ jobs:
           persist-credentials: false
       - name: Show Ruby version
         run: ruby --version
+      - name: Set up .NET
+        uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5
+        with:
+          dotnet-version: 8.0.x
+      - name: Show .NET version
+        run: dotnet --version
       - name: Validate tutorial archive
         run: make check

@@ -12,7 +12,7 @@ public class HitObject : MonoBehaviour
 
 	}
 
-	void OnTriggerEnter() //if ball hits collider
+	void OnTriggerEnter(Collider other) //if ball hits collider
 	{
 		// int currentScore = int.Parse(score.GetComponent().text) + 1; //add 1 to the score
 		// score.GetComponent().text = currentScore.ToString();

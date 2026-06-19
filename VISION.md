@@ -11,10 +11,10 @@ hands-on experiments.
 The goal is to preserve the tutorial value while keeping trademark, asset,
 toolchain, and SDK assumptions clear.
 
-Current baseline: `make check` verifies tutorial asset references, screenshot
-inventory, screenshot alt text, toolchain matrix coverage, exact Unity editor
-versions, asset-notice coverage, and canonical `docs/plans` records without
-requiring Unity, Blender, Xcode, or AR SDK installs.
+Current baseline: `make check` runs the C# compiler gate when .NET is available,
+then verifies tutorial assets, screenshots, exact Unity editor versions,
+asset-notice coverage, and canonical plans without requiring Unity, Blender,
+Xcode, or AR SDK installs. UnityScript remains manual.
 
 The current focus is:
 
@@ -27,7 +27,11 @@ Priority:
 - Keep screenshot image assets non-executable
 - Keep archived Blender, Unity package, FBX, and texture assets non-executable
 - Detect corrupted or mislabeled screenshots and archived binary tutorial assets
-- Validate TGA texture headers and declared pixel payload lengths without Unity
+- Validate archived TGA texture headers and pixel payload sizes
+- Validate complete PNG containers and terminal PNG/JPEG image markers
+- Preserve complete Blender header metadata and documented format versions
+- Preserve binary FBX header/footer agreement and documented format versions
+- Reject unsafe Unity package tar paths, links, and special entries
 - Keep Unity project files, source files, material files, and `.meta` files
   non-executable
 - Keep loose standalone screenshots documented in top-level notices
@@ -35,6 +39,10 @@ Priority:
 - Keep `TOOLCHAIN.md` aligned with Unity `ProjectVersion.txt` editor versions
 - Keep tutorial-local setup, SDK, package, camera, and location assumptions
   explicit
+- Keep the C# compiler gate tied to the tracked collision source and narrow
+  compile-only UnityEngine stubs
+- Preserve Unity message signatures that compilation alone cannot distinguish
+  from ordinary methods, including the Collider-parameter trigger callback
 - Maintain `make check`, `make verify`, and `make build` as the local tutorial
   asset inventory gates
 - Run the canonical Unity-free gate in hosted CI with read-only permissions and

@@ -1,5 +1,36 @@
 # Changes
 
+## 2026-06-17
+
+- Repaired the collision tutorial's Unity trigger callback signature and added
+  a static mutation contract that compilation alone could not provide.
+- Tightened Unity package tar validation so safe archives must use relative
+  member paths and cannot contain hardlinks, symlinks, or special entries.
+
+## 2026-06-16
+
+- Added a C# compiler gate that builds the tracked `HitObject.cs` with .NET 8
+  and narrow compile-only UnityEngine stubs; UnityScript remains manual.
+- Added streaming inner-tar integrity validation for the archived Unity
+  package, including header checksums, member framing, and termination.
+
+## 2026-06-15
+
+- Added streaming gzip integrity validation for the archived Unity package,
+  including truncation, checksum, size-footer, and trailing-byte failures.
+
+## 2026-06-13
+
+- Added binary FBX container checks for recorded versions, matching footer
+  versions, zeroed footer padding, terminal magic, truncation, and trailing
+  bytes without parsing scene content.
+- Validated complete Blender headers, pointer-width and endianness markers, and
+  documented 2.72/2.77 format versions without decoding model data.
+- Added PNG chunk framing, CRC, and terminal `IEND` validation plus JPEG
+  end-of-image checks for archived screenshots.
+- Added isolated screenshot truncation, payload-corruption, and trailing-byte
+  mutations without modifying checked-in assets.
+
 ## 2026-06-12
 
 - Added dependency-free TGA header and pixel-payload integrity checks with
