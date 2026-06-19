@@ -124,6 +124,26 @@ def parse_tar_octal(field)
   value.to_i(8)
 end
 
+def parse_tar_string(field)
+  field.sub(/\0.*\z/m, '')
+end
+
+def validate_tar_member_header(header)
+  name = parse_tar_string(header.byteslice(0, 100))
+  prefix = parse_tar_string(header.byteslice(345, 155))
+  path = prefix.empty? ? name : "#{prefix}/#{name}"
+  parts = path.split('/').reject { |part| part.empty? || part == '.' }
+
+  if path.empty? || path.start_with?('/') || path.match?(/\A[A-Za-z]:/) || parts.include?('..')
+    raise TarContainerError, 'must contain safe relative tar paths'
+  end
+
+  typeflag = header.byteslice(156, 1)
+  unless ["\0".b, '0'.b, '5'.b].include?(typeflag)
+    raise TarContainerError, 'must not contain tar links or special entries'
+  end
+end
+
 def validate_tar_stream(gzip)
   zero_headers = 0
 
@@ -155,6 +175,7 @@ def validate_tar_stream(gzip)
       index.between?(148, 155) ? 32 : byte
     end
     raise TarContainerError unless actual_checksum == expected_checksum
+    validate_tar_member_header(header)
 
     remaining_size = size
     while remaining_size.positive?
@@ -180,8 +201,10 @@ def validate_gzip_container(errors, path)
       errors << "#{path} must not contain trailing bytes after the gzip stream"
     end
   end
-rescue TarContainerError
-  errors << "#{path} must contain a valid tar archive"
+rescue TarContainerError => error
+  message = error.message
+  message = 'must contain a valid tar archive' if message.empty? || message == error.class.name
+  errors << "#{path} #{message}"
 rescue Zlib::Error, EOFError, IOError
   errors << "#{path} must have a valid gzip container"
 end
@@ -714,6 +737,11 @@ tar_method_end = tar_method_start && validator_lines[(tar_method_start + 1)..].i
 tar_method_source = if tar_method_start && tar_method_end
                       validator_lines[tar_method_start...(tar_method_start + 1 + tar_method_end)].join
                     end
+tar_member_method_start = validator_lines.index { |line| line == "def validate_tar_member_header(header)\n" }
+tar_member_method_end = tar_member_method_start && validator_lines[(tar_member_method_start + 1)..].index { |line| line.start_with?('def ') }
+tar_member_method_source = if tar_member_method_start && tar_member_method_end
+                             validator_lines[tar_member_method_start...(tar_member_method_start + 1 + tar_member_method_end)].join
+                           end
 [
   'Zlib::GzipReader.open(path)',
   'validate_tar_stream(gzip)',
@@ -730,11 +758,23 @@ end
   'expected_checksum = parse_tar_octal(header.byteslice(148, 8))',
   'size = parse_tar_octal(header.byteslice(124, 12))',
   'index.between?(148, 155) ? 32 : byte',
+  'validate_tar_member_header(header)',
   'padding_size = (512 - (size % 512)) % 512',
   'raise TarContainerError unless padding.each_byte.all?(&:zero?)',
   'raise TarContainerError unless (trailing_size % 512).zero?'
 ].each do |contract|
   errors << "Unity package tar validator must preserve executable contract: #{contract}" unless tar_method_source&.include?(contract)
+end
+[
+  'name = parse_tar_string(header.byteslice(0, 100))',
+  'prefix = parse_tar_string(header.byteslice(345, 155))',
+  "path.start_with?('/')",
+  'parts.include?(\'..\')',
+  'typeflag = header.byteslice(156, 1)',
+  'must contain safe relative tar paths',
+  'must not contain tar links or special entries'
+].each do |contract|
+  errors << "Unity package tar member validator must preserve executable contract: #{contract}" unless tar_member_method_source&.include?(contract)
 end
 unless validator_lines.count { |line| line == "  validate_gzip_container(errors, unity_package)\n" } == 1
   errors << 'Unity package gzip validator must execute exactly once per package'
@@ -772,6 +812,9 @@ if File.file?('scripts/test-tutorial-assets.sh')
     'assert_rejected "tar-payload" "004_slippy_maps/PokemonMap.unitypackage" "must contain a valid tar archive" "oversized-tar-member"',
     'assert_rejected "tar-padding" "004_slippy_maps/PokemonMap.unitypackage" "must contain a valid tar archive" "corrupt-tar-padding"',
     'assert_rejected "tar-terminator" "004_slippy_maps/PokemonMap.unitypackage" "must contain a valid tar archive" "missing-tar-terminator"',
+    'assert_rejected "tar-traversal" "004_slippy_maps/PokemonMap.unitypackage" "must contain safe relative tar paths" "tar-traversal"',
+    'assert_rejected "tar-absolute" "004_slippy_maps/PokemonMap.unitypackage" "must contain safe relative tar paths" "tar-absolute"',
+    'assert_rejected "tar-symlink" "004_slippy_maps/PokemonMap.unitypackage" "must not contain tar links or special entries" "tar-symlink"',
     'assert_rejected "binary-FBX" "001_collisions/Assets/Objects/Pikachu.FBX" "must have a valid binary FBX signature"',
     'assert_rejected "trigger-signature" "001_collisions/Assets/Scripts/HitObject.cs" "must use the supported OnTriggerEnter(Collider other) callback signature" "trigger-signature"'
   ].each do |contract|

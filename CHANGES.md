@@ -4,6 +4,8 @@
 
 - Repaired the collision tutorial's Unity trigger callback signature and added
   a static mutation contract that compilation alone could not provide.
+- Tightened Unity package tar validation so safe archives must use relative
+  member paths and cannot contain hardlinks, symlinks, or special entries.
 
 ## 2026-06-16
 

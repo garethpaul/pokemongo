@@ -94,8 +94,9 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   footer versions, zeroed footer padding, and terminal footer magic.
 - Unity package checks stream the complete gzip container and reject truncated
   data, invalid CRC or size footers, and trailing bytes. The decompressed tar
-  stream must also retain valid headers, checksums, sizes, member padding, and
-  its end-of-archive marker.
+  stream must also retain valid headers, checksums, sizes, member padding, safe
+  relative member paths, regular file or directory entries only, and its
+  end-of-archive marker.
 - Unity project files, source files, material files, and `.meta` files must
   also stay non-executable because they are data or source inputs here.
 - Every file and directory below a checked-in Unity `Assets` folder must keep

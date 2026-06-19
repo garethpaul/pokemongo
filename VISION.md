@@ -30,6 +30,7 @@ Priority:
 - Validate complete PNG containers and terminal PNG/JPEG image markers
 - Preserve complete Blender header metadata and documented format versions
 - Preserve binary FBX header/footer agreement and documented format versions
+- Reject unsafe Unity package tar paths, links, and special entries
 - Keep Unity project files, source files, material files, and `.meta` files
   non-executable
 - Keep loose standalone screenshots documented in top-level notices

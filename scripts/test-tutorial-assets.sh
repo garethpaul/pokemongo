@@ -8,6 +8,47 @@ trap 'rm -rf "$TMP_DIR"' EXIT HUP INT TERM
 
 "$VALIDATOR" >/dev/null
 
+write_tiny_unitypackage() {
+  ruby - "$1" <<'RUBY'
+require 'stringio'
+require 'zlib'
+
+path = ARGV.fetch(0)
+
+def write_tar_string(payload, offset, length, value)
+  payload[offset, length] = value + ("\0" * (length - value.bytesize))
+end
+
+def write_tar_octal(payload, offset, length, value)
+  payload[offset, length] = format("%0#{length - 1}o\0", value)
+end
+
+def refresh_tar_checksum(payload)
+  payload[148, 8] = ' ' * 8
+  payload[148, 8] = format("%06o\0 ", payload.byteslice(0, 512).bytes.sum)
+end
+
+body = 'payload'
+header = "\0".b * 512
+write_tar_string(header, 0, 100, './asset')
+write_tar_octal(header, 100, 8, 0o644)
+write_tar_octal(header, 108, 8, 0)
+write_tar_octal(header, 116, 8, 0)
+write_tar_octal(header, 124, 12, body.bytesize)
+write_tar_octal(header, 136, 12, 0)
+header[156, 1] = '0'
+write_tar_string(header, 257, 6, 'ustar')
+write_tar_string(header, 263, 2, '00')
+refresh_tar_checksum(header)
+payload = header + body + ("\0".b * ((512 - (body.bytesize % 512)) % 512)) + ("\0".b * 1024)
+output = StringIO.new(''.b)
+gzip = Zlib::GzipWriter.new(output)
+gzip.write(payload)
+gzip.close
+File.binwrite(path, output.string)
+RUBY
+}
+
 assert_rejected() {
   name=$1
   relative_path=$2
@@ -16,13 +57,15 @@ assert_rejected() {
   case_dir="$TMP_DIR/$name"
 
   cp -al "$ROOT_DIR/." "$case_dir"
+  rm "$case_dir/004_slippy_maps/PokemonMap.unitypackage"
+  write_tiny_unitypackage "$case_dir/004_slippy_maps/PokemonMap.unitypackage"
   target="$case_dir/$relative_path"
   case "$mutation" in
     replace)
       rm "$target"
       printf '%s\n' 'corrupt tutorial asset' > "$target"
       ;;
-    corrupt-png|truncate-png|append-png|truncate-jpeg|blender-pointer|blender-endian|blender-version-shape|blender-version|truncate-blender|fbx-header-version|fbx-footer-version|fbx-footer-padding|truncate-fbx|strip-fbx-footer|append-fbx|truncate-gzip|corrupt-gzip-crc|corrupt-gzip-size|append-gzip|corrupt-tar-checksum|malformed-tar-size|oversized-tar-member|corrupt-tar-padding|missing-tar-terminator|trigger-signature)
+    corrupt-png|truncate-png|append-png|truncate-jpeg|blender-pointer|blender-endian|blender-version-shape|blender-version|truncate-blender|fbx-header-version|fbx-footer-version|fbx-footer-padding|truncate-fbx|strip-fbx-footer|append-fbx|truncate-gzip|corrupt-gzip-crc|corrupt-gzip-size|append-gzip|corrupt-tar-checksum|malformed-tar-size|oversized-tar-member|corrupt-tar-padding|missing-tar-terminator|tar-traversal|tar-absolute|tar-symlink|trigger-signature)
       cp "$target" "$target.copy"
       mv "$target.copy" "$target"
       ruby - "$target" "$mutation" <<'RUBY'
@@ -32,10 +75,6 @@ require 'zlib'
 path = ARGV.fetch(0)
 mutation = ARGV.fetch(1)
 data = File.binread(path)
-
-def gzip_payload(data)
-  Zlib::GzipReader.new(StringIO.new(data)).read
-end
 
 def gzip_data(payload)
   output = StringIO.new(''.b)
@@ -52,6 +91,38 @@ end
 def refresh_tar_checksum(payload)
   payload[148, 8] = ' ' * 8
   payload[148, 8] = format("%06o\0 ", payload.byteslice(0, 512).bytes.sum)
+end
+
+def write_tar_string(payload, offset, length, value)
+  raise 'tar field too long' if value.bytesize > length
+
+  payload[offset, length] = value + ("\0" * (length - value.bytesize))
+end
+
+def tar_header(name:, typeflag: '0', size: 0, linkname: '')
+  header = "\0".b * 512
+  write_tar_string(header, 0, 100, name)
+  write_tar_octal(header, 100, 8, 0o644)
+  write_tar_octal(header, 108, 8, 0)
+  write_tar_octal(header, 116, 8, 0)
+  write_tar_octal(header, 124, 12, size)
+  write_tar_octal(header, 136, 12, 0)
+  header[148, 8] = ' ' * 8
+  header[156, 1] = typeflag
+  write_tar_string(header, 157, 100, linkname)
+  write_tar_string(header, 257, 6, 'ustar')
+  write_tar_string(header, 263, 2, '00')
+  refresh_tar_checksum(header)
+  header
+end
+
+def tiny_tar(name: './asset', body: 'payload', typeflag: '0', linkname: '')
+  payload = ''.b
+  payload << tar_header(name: name, typeflag: typeflag, size: body.bytesize, linkname: linkname)
+  payload << body
+  payload << ("\0".b * ((512 - (body.bytesize % 512)) % 512))
+  payload << ("\0".b * 1024)
+  payload
 end
 
 case mutation
@@ -104,45 +175,32 @@ when 'corrupt-gzip-size'
 when 'append-gzip'
   data << 'trailing bytes'
 when 'corrupt-tar-checksum'
-  payload = gzip_payload(data)
+  payload = tiny_tar
   payload.setbyte(0, payload.getbyte(0) ^ 0x01)
   data = gzip_data(payload)
 when 'malformed-tar-size'
-  payload = gzip_payload(data)
+  payload = tiny_tar
   payload[124, 12] = "xxxxxxxxxxx\0"
   refresh_tar_checksum(payload)
   data = gzip_data(payload)
 when 'oversized-tar-member'
-  payload = gzip_payload(data)
-  write_tar_octal(payload, 124, 12, payload.bytesize + 512)
+  payload = tiny_tar
+  write_tar_octal(payload, 124, 12, 4096)
   refresh_tar_checksum(payload)
   data = gzip_data(payload)
 when 'corrupt-tar-padding'
-  payload = gzip_payload(data)
-  offset = 0
-  mutated = false
-  while offset + 512 <= payload.bytesize
-    header = payload.byteslice(offset, 512)
-    break if header == "\0".b * 512
-
-    size = header.byteslice(124, 12).sub(/\0.*\z/m, '').strip.to_i(8)
-    padding_size = (512 - (size % 512)) % 512
-    if padding_size.positive?
-      padding_offset = offset + 512 + size
-      payload.setbyte(padding_offset, 1)
-      mutated = true
-      break
-    end
-    offset += 512 + size
-  end
-  raise 'tar fixture has no padded member' unless mutated
+  payload = tiny_tar(body: 'x')
+  payload.setbyte(513, 1)
   data = gzip_data(payload)
 when 'missing-tar-terminator'
-  payload = gzip_payload(data)
-  last_nonzero = payload.bytesize - 1
-  last_nonzero -= 1 while last_nonzero >= 0 && payload.getbyte(last_nonzero).zero?
-  payload = payload.byteslice(0, last_nonzero + 1)
+  payload = tiny_tar.byteslice(0, 1024)
   data = gzip_data(payload)
+when 'tar-traversal'
+  data = gzip_data(tiny_tar(name: '../evil'))
+when 'tar-absolute'
+  data = gzip_data(tiny_tar(name: '/tmp/evil'))
+when 'tar-symlink'
+  data = gzip_data(tiny_tar(name: './link', body: ''.b, typeflag: '2', linkname: './target'))
 when 'trigger-signature'
   data.sub!(/OnTriggerEnter\s*\(\s*Collider\s+\w+\s*\)/, 'OnTriggerEnter()')
 end
@@ -192,6 +250,9 @@ assert_rejected "tar-size" "004_slippy_maps/PokemonMap.unitypackage" "must conta
 assert_rejected "tar-payload" "004_slippy_maps/PokemonMap.unitypackage" "must contain a valid tar archive" "oversized-tar-member"
 assert_rejected "tar-padding" "004_slippy_maps/PokemonMap.unitypackage" "must contain a valid tar archive" "corrupt-tar-padding"
 assert_rejected "tar-terminator" "004_slippy_maps/PokemonMap.unitypackage" "must contain a valid tar archive" "missing-tar-terminator"
+assert_rejected "tar-traversal" "004_slippy_maps/PokemonMap.unitypackage" "must contain safe relative tar paths" "tar-traversal"
+assert_rejected "tar-absolute" "004_slippy_maps/PokemonMap.unitypackage" "must contain safe relative tar paths" "tar-absolute"
+assert_rejected "tar-symlink" "004_slippy_maps/PokemonMap.unitypackage" "must not contain tar links or special entries" "tar-symlink"
 assert_rejected "binary-FBX" "001_collisions/Assets/Objects/Pikachu.FBX" "must have a valid binary FBX signature"
 assert_rejected "trigger-signature" "001_collisions/Assets/Scripts/HitObject.cs" "must use the supported OnTriggerEnter(Collider other) callback signature" "trigger-signature"
 
