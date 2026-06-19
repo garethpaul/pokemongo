@@ -45,7 +45,28 @@ Numbered tutorial directories should stay contiguous and listed in the top-level
 README so readers do not miss permission-sensitive AR or location examples.
 Recursive asset validation is anchored to this repository so checks do not
 inspect unrelated caller-directory files. Hosted validation uses read-only
-repository access and a pinned checkout action.
+repository access, a pinned checkout action without persisted credentials, and
+explicit CODEOWNERS review routing.
+The dependency-free gate checks recognizable signatures for archived images,
+Blender projects, binary FBX models, and gzip-compressed Unity packages so text
+placeholders or truncated replacements do not pass as tutorial assets.
+TGA texture headers and pixel payload sizes are checked before archived texture
+files are trusted as complete uncompressed true-color images.
+Complete Blender header metadata is validated before archived model sources are
+trusted, including pointer-width, endianness, and version markers.
+Binary FBX models must retain their recorded header version, matching footer
+version, zeroed footer padding, and terminal footer magic so prefixed or
+truncated replacements fail before import.
+Unity package tar members must keep safe relative paths and regular file or
+directory typeflags so path traversal, hardlink, symlink, or special-device
+entries cannot pass as ordinary tutorial package content.
+The C# compiler gate builds the tracked collision script against narrow
+compile-only UnityEngine stubs so syntax and referenced symbol regressions fail
+in hosted CI. UnityScript remains manual, and passing this gate does not prove
+safe Unity import or runtime behavior.
+The static validator separately preserves the supported Collider-parameter
+trigger callback signature so a compiling but undispatchable method cannot
+silently replace it.
 
 ## Dependency and Supply Chain Security
 

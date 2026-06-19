@@ -1,9 +1,51 @@
 # Changes
 
+## 2026-06-17
+
+- Repaired the collision tutorial's Unity trigger callback signature and added
+  a static mutation contract that compilation alone could not provide.
+- Tightened Unity package tar validation so safe archives must use relative
+  member paths and cannot contain hardlinks, symlinks, or special entries.
+
+## 2026-06-16
+
+- Added a C# compiler gate that builds the tracked `HitObject.cs` with .NET 8
+  and narrow compile-only UnityEngine stubs; UnityScript remains manual.
+- Added streaming inner-tar integrity validation for the archived Unity
+  package, including header checksums, member framing, and termination.
+
+## 2026-06-15
+
+- Added streaming gzip integrity validation for the archived Unity package,
+  including truncation, checksum, size-footer, and trailing-byte failures.
+
+## 2026-06-13
+
+- Added binary FBX container checks for recorded versions, matching footer
+  versions, zeroed footer padding, terminal magic, truncation, and trailing
+  bytes without parsing scene content.
+- Validated complete Blender headers, pointer-width and endianness markers, and
+  documented 2.72/2.77 format versions without decoding model data.
+- Added PNG chunk framing, CRC, and terminal `IEND` validation plus JPEG
+  end-of-image checks for archived screenshots.
+- Added isolated screenshot truncation, payload-corruption, and trailing-byte
+  mutations without modifying checked-in assets.
+
+## 2026-06-12
+
+- Added dependency-free TGA header and pixel-payload integrity checks with
+  isolated malformed-header and truncated-payload mutations.
+- Added dependency-free signature checks and corruption mutations for PNG/JPEG
+  screenshots, Blender projects, binary FBX models, and Unity packages.
+
 ## 2026-06-10
 
 - Added hosted Unity-free tutorial validation with read-only permissions and a
   pinned checkout action.
+- Disabled hosted checkout credential persistence, added CODEOWNERS, and made
+  the validator reject extra workflows or write permissions.
+- Extended hosted validation to every pushed branch so remediation commits are
+  checked before a pull request is opened.
 - Anchored recursive asset validation to the repository so invocation from
   another directory cannot scan unrelated files.
 - Added tutorial sequence validation so numbered tutorial directories must stay
