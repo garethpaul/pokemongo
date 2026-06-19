@@ -27,6 +27,7 @@ Priority:
 - Keep screenshot image assets non-executable
 - Keep archived Blender, Unity package, FBX, and texture assets non-executable
 - Detect corrupted or mislabeled screenshots and archived binary tutorial assets
+- Validate TGA texture headers and declared pixel payload lengths without Unity
 - Keep Unity project files, source files, material files, and `.meta` files
   non-executable
 - Keep loose standalone screenshots documented in top-level notices

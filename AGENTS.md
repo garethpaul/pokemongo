@@ -35,6 +35,8 @@
 - No dedicated test files were detected; treat `make check` as the minimum baseline.
 - Start with the narrowest relevant test or Make target, then run `make check` before handing off if the change is not documentation-only.
 - Keep README verification notes in sync when commands, fixtures, or supported toolchains change.
+- Preserve TGA header and pixel-payload integrity checks when changing archived
+  character textures or tutorial asset validation.
 
 ## PR / change guidance
 
@@ -51,6 +53,8 @@
 - See `TOOLCHAIN.md` for tutorial setup and permission-sensitive assumptions.
 - See `ASSET_NOTICES.md` for asset ownership and fan-project usage notes.
 - See `CHANGES.md` for maintenance history.
+- See `docs/plans/2026-06-12-tga-integrity-validation.md` for structural TGA
+  corruption coverage and its dependency-free boundary.
 
 ## Agent workflow
 
