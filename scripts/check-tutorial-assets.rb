@@ -904,12 +904,59 @@ end
 if File.file?('Makefile')
   makefile = File.read('Makefile')
   [
-    'override REPO_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))',
-    'cd "$(REPO_ROOT)" && scripts/check-tutorial-assets.rb',
-    'cd "$(REPO_ROOT)" && scripts/test-tutorial-assets.sh'
+    'override SHELL := /bin/sh',
+    'override .SHELLFLAGS := -c',
+    'ifneq ($(origin MAKEFILE_LIST),file)',
+    '$(error MAKEFILE_LIST must not be overridden)',
+    '$(error MAKEFILES must not be set)',
+    'override REPO_ROOT := $(shell path=',
+    '/usr/bin/dirname',
+    '/bin/pwd -P',
+    'export REPO_ROOT',
+    'export DOTNET',
+    'cd "$$REPO_ROOT" && scripts/check-tutorial-assets.rb',
+    'cd "$$REPO_ROOT" && scripts/test-tutorial-assets.sh',
+    'root-test:',
+    'cd "$$REPO_ROOT" && scripts/test-makefile-root.sh',
+    'verify: lint test build root-test'
   ].each do |contract|
     errors << "Makefile must remain caller-directory independent: #{contract}" unless makefile.include?(contract)
   end
+end
+
+root_test_path = 'scripts/test-makefile-root.sh'
+root_plan_path = 'docs/plans/2026-06-21-safe-make-root.md'
+
+if File.file?(root_test_path)
+  root_test = File.read(root_test_path)
+  [
+    'Pokemongo',
+    'touch pwned',
+    'shell-active checkout path executed',
+    'MAKEFILE_LIST must not be overridden',
+    'MAKEFILES must not be set',
+    'caller-controlled SHELL executed',
+    'caller-controlled DOTNET executed as shell source'
+  ].each do |contract|
+    errors << "Makefile root test must preserve: #{contract}" unless root_test.include?(contract)
+  end
+else
+  errors << "#{root_test_path} is missing"
+end
+
+if File.file?(root_plan_path)
+  root_plan = File.read(root_plan_path)
+  [
+    'Status: Completed',
+    'six pre-existing public Make',
+    'root regression gate itself',
+    'shell-active checkout',
+    '`MAKEFILE_LIST`, `MAKEFILES`, `SHELL`, and `DOTNET`'
+  ].each do |evidence|
+    errors << "safe Make root plan must preserve evidence: #{evidence}" unless root_plan.include?(evidence)
+  end
+else
+  errors << "#{root_plan_path} is missing"
 end
 
 if File.file?('docs/plans/2026-06-14-location-independent-make.md')
@@ -996,7 +1043,7 @@ if File.file?('Makefile')
     'DOTNET ?= dotnet',
     'check: compile verify',
     'compile:',
-    'DOTNET="$(DOTNET)" "$(REPO_ROOT)/scripts/compile-hit-object.sh"',
+    'DOTNET="$$DOTNET" "$$REPO_ROOT/scripts/compile-hit-object.sh"',
     'build: compile lint'
   ].each do |contract|
     errors << "Makefile must preserve the C# compiler gate: #{contract}" unless makefile.include?(contract)

@@ -124,6 +124,10 @@ When the required SDK or runtime is unavailable, use static checks and source re
 
 ## Maintenance Notes
 
+- Make gates reject caller-controlled root/control variables, pin their shell,
+  and treat the optional archived C# compiler command as data rather than shell
+  source.
+
 - See `SECURITY.md` for vulnerability reporting and safe research guidance.
 - See `VISION.md` for project direction and contribution guardrails.
 - See `TOOLCHAIN.md` for tutorial setup and permission-sensitive assumptions.

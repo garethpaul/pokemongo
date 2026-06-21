@@ -1,5 +1,11 @@
 # Changes
 
+## 2026-06-21
+
+- Hardened all six pre-existing Make gates against control-variable redirection,
+  hostile compiler overrides, and shell-active checkout paths without changing
+  tutorial assets or archived sample behavior.
+
 ## 2026-06-17
 
 - Repaired the collision tutorial's Unity trigger callback signature and added
