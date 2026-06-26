@@ -81,6 +81,8 @@ The setup commands above are derived from repository files. Legacy mobile, Pytho
   pixel payload integrity, PNG chunk CRCs and terminal image markers,
   complete Unity package gzip streams, and asset-notice coverage without
   requiring Unity to be installed.
+- The resolved local image targets in tutorial READMEs must stay inside this
+  repository; shared `../screenshots/...` references remain supported.
 - Numbered tutorial directories must stay contiguous from `001` and remain
   listed in this top-level README.
 - Tutorial READMEs must name their critical setup files, SDKs, and permission

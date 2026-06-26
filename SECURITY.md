@@ -47,6 +47,8 @@ Recursive asset validation is anchored to this repository so checks do not
 inspect unrelated caller-directory files. Hosted validation uses read-only
 repository access, a pinned checkout action without persisted credentials, and
 explicit CODEOWNERS review routing.
+Tutorial README image validation also confines resolved local targets to the
+repository, rejecting both lexical path escapes and symlinks to outside files.
 The dependency-free gate checks recognizable signatures for archived images,
 Blender projects, binary FBX models, and gzip-compressed Unity packages so text
 placeholders or truncated replacements do not pass as tutorial assets.

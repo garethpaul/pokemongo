@@ -46,6 +46,20 @@ rescue EOFError
   errors << "#{path} must have a valid #{format} signature"
 end
 
+def path_within_root?(path, root)
+  expanded_root = File.expand_path(root)
+  expanded_path = File.expand_path(path)
+  root_prefix = "#{expanded_root}#{File::SEPARATOR}"
+  return false unless expanded_path.start_with?(root_prefix)
+  return true unless File.exist?(expanded_path) || File.symlink?(expanded_path)
+
+  real_root = File.realpath(expanded_root)
+  real_path = File.realpath(expanded_path)
+  real_path.start_with?("#{real_root}#{File::SEPARATOR}")
+rescue Errno::EACCES, Errno::ELOOP, Errno::ENOENT
+  false
+end
+
 def validate_tga(errors, path)
   return unless File.file?(path)
 
@@ -314,6 +328,10 @@ tutorials.each do |tutorial|
     next if src.start_with?('http://', 'https://')
 
     target = File.expand_path(src, tutorial)
+    unless path_within_root?(target, ROOT_DIR)
+      errors << "#{readme} image #{src} must stay inside the tutorial repository"
+      next
+    end
     referenced_images << target
     errors << "#{readme} references missing image #{src}" unless File.file?(target)
   end
@@ -367,6 +385,7 @@ require_file(errors, 'docs/plans/2026-06-13-fbx-container-integrity.md', 'canoni
 require_file(errors, 'docs/plans/2026-06-15-unitypackage-gzip-integrity.md', 'canonical docs/plans Unity package gzip integrity plan is missing')
 require_file(errors, 'docs/plans/2026-06-16-unitypackage-tar-integrity.md', 'canonical docs/plans Unity package tar integrity plan is missing')
 require_file(errors, 'docs/plans/2026-06-16-csharp-compiler-gate.md', 'canonical docs/plans C# compiler gate plan is missing')
+require_file(errors, 'docs/plans/2026-06-26-readme-image-root-boundary.md', 'canonical docs/plans README image root boundary plan is missing')
 require_file(errors, '.github/CODEOWNERS', 'repository CODEOWNERS is missing')
 require_file(errors, '.github/workflows/check.yml', 'hosted tutorial validation workflow is missing')
 require_file(errors, 'TOOLCHAIN.md', 'TOOLCHAIN.md is missing')
@@ -406,7 +425,8 @@ if File.file?('.github/CODEOWNERS') && File.read('.github/CODEOWNERS').strip != 
 end
 
 if File.file?('README.md')
-  readme = File.read('README.md')
+  readme = File.read('README.md', encoding: Encoding::UTF_8)
+  normalized_readme = readme.split.join(' ')
   tutorials.each do |tutorial|
     errors << "README.md missing tutorial directory #{tutorial}" unless readme.include?(tutorial)
   end
@@ -428,6 +448,10 @@ if File.file?('README.md')
   unless readme.include?('decompressed tar') && readme.include?('header') &&
          readme.include?('checksums') && readme.include?('end-of-archive marker')
     errors << 'README.md must document Unity package tar integrity checks'
+  end
+  unless normalized_readme.include?('resolved local image targets') &&
+         normalized_readme.include?('inside this repository')
+    errors << 'README.md must document the tutorial image root boundary'
   end
 end
 
@@ -856,6 +880,8 @@ if File.file?('scripts/test-tutorial-assets.sh')
     'assert_rejected "tar-traversal" "004_slippy_maps/PokemonMap.unitypackage" "must contain safe relative tar paths" "tar-traversal"',
     'assert_rejected "tar-absolute" "004_slippy_maps/PokemonMap.unitypackage" "must contain safe relative tar paths" "tar-absolute"',
     'assert_rejected "tar-symlink" "004_slippy_maps/PokemonMap.unitypackage" "must not contain tar links or special entries" "tar-symlink"',
+    'assert_readme_image_escape_rejected',
+    'assert_readme_image_symlink_escape_rejected',
     'assert_rejected "binary-FBX" "001_collisions/Assets/Objects/Pikachu.FBX" "must have a valid binary FBX signature"',
     'assert_rejected "trigger-signature" "001_collisions/Assets/Scripts/HitObject.cs" "must use the supported OnTriggerEnter(Collider other) callback signature" "trigger-signature"',
     'assert_rejected "TGA-header" "001_collisions/Assets/Objects/Pikachu.fbm/PikachuDh.tga" "must have a valid uncompressed true-color TGA header"',
@@ -882,6 +908,22 @@ if File.file?('scripts/test-tutorial-assets.sh')
     end
   end
   errors << 'tutorial asset mutation test must use an isolated root' unless mutation_test.include?('TUTORIAL_ROOT=')
+end
+
+image_boundary_plan = 'docs/plans/2026-06-26-readme-image-root-boundary.md'
+if File.file?(image_boundary_plan)
+  plan = File.read(image_boundary_plan)
+  unless plan.include?('Status: Completed') && plan.include?('make check') &&
+         plan.include?('lexical path escape') && plan.include?('symlink escape')
+    errors << 'README image root boundary plan must preserve completed verification evidence'
+  end
+end
+
+validator_source = File.read(__FILE__)
+unless validator_source.include?('def path_within_root?(path, root)') &&
+       validator_source.include?('File.realpath(expanded_path)') &&
+       validator_source.include?('must stay inside the tutorial repository')
+  errors << 'tutorial validator must preserve resolved README image root containment'
 end
 
 if File.file?('README.md')

@@ -297,6 +297,58 @@ assert_tga_header_byte_rejected() {
   fi
 }
 
+assert_readme_image_escape_rejected() {
+  case_dir="$TMP_DIR/README-image-escape"
+  outside_image="$TMP_DIR/outside.png"
+
+  cp -al "$ROOT_DIR/." "$case_dir"
+  rm "$case_dir/004_slippy_maps/PokemonMap.unitypackage"
+  write_tiny_unitypackage "$case_dir/004_slippy_maps/PokemonMap.unitypackage"
+  cp "$ROOT_DIR/screenshots/001/001.png" "$outside_image"
+  cp "$case_dir/001_collisions/README.md" "$case_dir/001_collisions/README.md.copy"
+  mv "$case_dir/001_collisions/README.md.copy" "$case_dir/001_collisions/README.md"
+  printf '%s\n' '<img src="../../outside.png" alt="Escaped image" width="1px">' >> \
+    "$case_dir/001_collisions/README.md"
+
+  if output=$(TUTORIAL_ROOT="$case_dir" "$VALIDATOR" 2>&1); then
+    printf '%s\n' "Validator accepted a tutorial image outside the repository." >&2
+    exit 1
+  fi
+
+  if ! printf '%s\n' "$output" | grep -Fq "must stay inside the tutorial repository"; then
+    printf '%s\n' "Validator rejected an escaped tutorial image without the expected error." >&2
+    printf '%s\n' "$output" >&2
+    exit 1
+  fi
+}
+
+assert_readme_image_symlink_escape_rejected() {
+  case_dir="$TMP_DIR/README-image-symlink-escape"
+  outside_image="$TMP_DIR/symlink-outside.png"
+  escaped_image="$case_dir/screenshots/001/escaped.png"
+
+  cp -al "$ROOT_DIR/." "$case_dir"
+  rm "$case_dir/004_slippy_maps/PokemonMap.unitypackage"
+  write_tiny_unitypackage "$case_dir/004_slippy_maps/PokemonMap.unitypackage"
+  cp "$ROOT_DIR/screenshots/001/001.png" "$outside_image"
+  ln -s "$outside_image" "$escaped_image"
+  cp "$case_dir/001_collisions/README.md" "$case_dir/001_collisions/README.md.copy"
+  mv "$case_dir/001_collisions/README.md.copy" "$case_dir/001_collisions/README.md"
+  printf '%s\n' '<img src="../screenshots/001/escaped.png" alt="Escaped symlink image" width="1px">' >> \
+    "$case_dir/001_collisions/README.md"
+
+  if output=$(TUTORIAL_ROOT="$case_dir" "$VALIDATOR" 2>&1); then
+    printf '%s\n' "Validator accepted a tutorial image symlink outside the repository." >&2
+    exit 1
+  fi
+
+  if ! printf '%s\n' "$output" | grep -Fq "must stay inside the tutorial repository"; then
+    printf '%s\n' "Validator rejected an escaped tutorial image symlink without the expected error." >&2
+    printf '%s\n' "$output" >&2
+    exit 1
+  fi
+}
+
 assert_rejected "PNG" "screenshots/001/001.png" "must have a valid PNG signature"
 assert_rejected "JPEG" "screenshots/004/001.jpg" "must have a valid JPEG signature"
 assert_rejected "PNG-CRC" "screenshots/001/001.png" "must have valid PNG chunk CRCs" "corrupt-png"
@@ -337,5 +389,7 @@ assert_tga_header_byte_rejected "TGA-image-type" "001_collisions/Assets/Objects/
 assert_tga_header_byte_rejected "TGA-zero-width" "001_collisions/Assets/Objects/Pikachu.fbm/PikachuDh.tga" 13 0
 assert_tga_header_byte_rejected "TGA-pixel-depth" "001_collisions/Assets/Objects/Pikachu.fbm/PikachuDh.tga" 16 16
 assert_truncated_tga "001_collisions/Assets/Objects/Pikachu.fbm/PikachuEyeDh.tga"
+assert_readme_image_escape_rejected
+assert_readme_image_symlink_escape_rejected
 
 printf '%s\n' "Tutorial asset integrity mutation tests passed."
