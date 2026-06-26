@@ -1,5 +1,22 @@
 # Changes
 
+## 2026-06-26
+
+- **Timestamp:** 2026-06-26 13:06:38 PDT.
+- **Priority:** Documentation and asset trust-boundary correctness.
+- **Summary:** Reject tutorial README image paths and symlinks whose resolved
+  targets leave the validated repository while preserving shared screenshots.
+- **Files:** `scripts/check-tutorial-assets.rb`,
+  `scripts/test-tutorial-assets.sh`, `README.md`, `SECURITY.md`, `VISION.md`,
+  `CHANGES.md`, and `docs/plans/2026-06-26-readme-image-root-boundary.md`.
+- **Tests:** Ruby 2.7/3.3 mutation suites, .NET 8 compilation, repository and
+  external `make check`, Make-root attacks, and old-behavior mutation rejection
+  pass under the hosted UTF-8 locale.
+- **Findings:** The prior existence-only check accepted additional tutorial
+  images from outside the repository.
+- **Blockers:** None.
+- **Next action:** Verify the exact hosted Ruby and .NET head before merge.
+
 ## 2026-06-21
 
 - Hardened all six pre-existing Make gates against control-variable redirection,
